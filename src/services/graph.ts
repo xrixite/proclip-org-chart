@@ -178,7 +178,7 @@ class GraphService {
         .filter(([_, value]) => value.managerId === userId)
         .map(([id]) => id);
 
-      // Group direct reports by department
+      // Sort direct reports by department to visually cluster them
       const departmentGroups = new Map<string, string[]>();
       for (const reportId of directReportIds) {
         const reportEntry = userMap.get(reportId);
@@ -189,35 +189,14 @@ class GraphService {
         departmentGroups.get(dept)!.push(reportId);
       }
 
-      let children: OrgNode[];
-
-      // If there are 3+ departments, group them
-      if (departmentGroups.size >= 3) {
-        console.log(`Grouping ${departmentGroups.size} departments under ${entry.user.displayName}`);
-
-        children = Array.from(departmentGroups.entries()).map(([deptName, memberIds]) => {
-          // Create a department group node using the first member as the representative user
-          const firstMemberId = memberIds[0];
-          const firstMember = userMap.get(firstMemberId)!;
-
-          return {
-            user: {
-              ...firstMember.user,
-              displayName: deptName,
-              jobTitle: `${memberIds.length} member${memberIds.length > 1 ? 's' : ''}`,
-            },
-            managerId: userId,
-            directReports: memberIds,
-            level: level + 1,
-            children: memberIds.map(id => buildNode(id, level + 2)),
-            isDepartmentGroup: true,
-            departmentName: deptName,
-          };
-        });
-      } else {
-        // Normal tree structure - no grouping
-        children = directReportIds.map(id => buildNode(id, level + 1));
+      // Flatten the groups back to a sorted list (grouped by department)
+      const sortedReportIds: string[] = [];
+      for (const [_, memberIds] of departmentGroups.entries()) {
+        sortedReportIds.push(...memberIds);
       }
+
+      // Build nodes for all reports (no department card nodes)
+      const children = sortedReportIds.map(id => buildNode(id, level + 1));
 
       return {
         user: entry.user,
