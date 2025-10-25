@@ -1,0 +1,47 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "your-app-id-here",
+  "packageName": "com.proclip.orgchart",
+  "developer": {
+    "name": "ProClip",
+    "websiteUrl": "https://www.proclip.com",
+    "privacyUrl": "https://www.proclip.com/privacy",
+    "termsOfUseUrl": "https://www.proclip.com/terms"
+  },
+  "icons": {
+    "color": "icon-color.png",
+    "outline": "icon-outline.png"
+  },
+  "name": {
+    "short": "OrgChart",
+    "full": "ProClip Organization Chart"
+  },
+  "description": {
+    "short": "Interactive organization chart for your team",
+    "full": "View your company's organizational structure, search for colleagues, and easily connect with team members through an intuitive, visual interface."
+  },
+  "accentColor": "#6264A7",
+  "configurableTabs": [],
+  "staticTabs": [
+    {
+      "entityId": "orgchart",
+      "name": "Org Chart",
+      "contentUrl": "https://your-domain.com/",
+      "websiteUrl": "https://your-domain.com/",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": [
+    "identity",
+    "messageTeamMembers"
+  ],
+  "validDomains": [
+    "your-domain.com"
+  ],
+  "webApplicationInfo": {
+    "id": "your-azure-app-client-id",
+    "resource": "api://your-domain.com/your-azure-app-client-id"
+  }
+}
