@@ -25,6 +25,8 @@ export interface OrgNode {
   directReports: string[]; // Array of user IDs
   level: number; // Depth from CEO
   children: OrgNode[];
+  isDepartmentGroup?: boolean; // True if this is a department grouping node
+  departmentName?: string; // Name of the department if isDepartmentGroup is true
 }
 
 /**

@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
-import { ChevronDown20Regular, WeatherMoon20Regular, WeatherSunny20Regular } from '@fluentui/react-icons';
+import { ChevronDown20Regular, WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
 import { useStore } from './store';
 import { authService } from './services/auth';
 import { graphService } from './services/graph';
@@ -9,6 +9,7 @@ import OrgChart from './components/OrgChart';
 import SearchBar from './components/SearchBar';
 import PersonDetailPanel from './components/PersonDetailPanel';
 import DepartmentFilter from './components/DepartmentFilter';
+import ManagerSetup from './components/ManagerSetup';
 
 const useStyles = makeStyles({
   container: {
@@ -60,6 +61,7 @@ const useStyles = makeStyles({
 
 function App() {
   const styles = useStyles();
+  const [showManagerSetup, setShowManagerSetup] = useState(false);
   const {
     isLoading,
     error,
@@ -128,12 +130,18 @@ function App() {
         const currentUser = await graphService.getCurrentUser();
         setCurrentUserId(currentUser.id);
 
-        // Fetch all users (only 45 employees, so fetch all at once)
+        // Fetch all users
         const allUsers = await graphService.getAllUsers();
-        setUsers(allUsers);
 
-        // Build organization tree
-        const orgTree = await graphService.buildOrgTree(allUsers);
+        // Filter out excluded users
+        const excludedUsersJson = localStorage.getItem('proclip-excluded-users');
+        const excludedUserIds = excludedUsersJson ? new Set(JSON.parse(excludedUsersJson)) : new Set();
+        const visibleUsers = allUsers.filter(user => !excludedUserIds.has(user.id));
+
+        setUsers(visibleUsers);
+
+        // Build organization tree from visible users only
+        const orgTree = await graphService.buildOrgTree(visibleUsers);
         setOrgTree(orgTree);
 
         setLoading(false);
@@ -259,13 +267,36 @@ function App() {
               onClick={() => setDarkMode(!isDarkMode)}
               title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             />
+            {!isMockMode() && (
+              <Button
+                appearance="subtle"
+                icon={<PeopleTeam20Regular />}
+                onClick={() => {
+                  if (showManagerSetup) {
+                    // Switching back to chart view - reload the page to refresh data
+                    window.location.reload();
+                  } else {
+                    setShowManagerSetup(true);
+                  }
+                }}
+                title="Setup Manager Relationships"
+              >
+                {showManagerSetup ? 'View Chart' : 'Setup Managers'}
+              </Button>
+            )}
             <DepartmentFilter />
             <SearchBar />
           </div>
         </div>
         <div className={styles.content}>
-          <OrgChart />
-          {selectedUserId && <PersonDetailPanel />}
+          {showManagerSetup ? (
+            <ManagerSetup />
+          ) : (
+            <>
+              <OrgChart />
+              {selectedUserId && <PersonDetailPanel />}
+            </>
+          )}
         </div>
       </div>
     </FluentProvider>

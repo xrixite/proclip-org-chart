@@ -14,12 +14,16 @@ import 'reactflow/dist/style.css';
 import { OrgNode, User } from '../types';
 import { useStore } from '../store';
 import UserCard from './UserCard';
+import DepartmentCard from './DepartmentCard';
 import OrgChartEdge from './OrgChartEdge';
 
 /**
  * Custom node component for React Flow
  */
-function CustomNode({ data }: { data: { user: User; isCurrentUser: boolean } }) {
+function CustomNode({ data }: { data: { user: User; isCurrentUser: boolean; isDepartmentGroup?: boolean; departmentName?: string; memberCount?: number } }) {
+  if (data.isDepartmentGroup && data.departmentName) {
+    return <DepartmentCard departmentName={data.departmentName} memberCount={data.memberCount || 0} />;
+  }
   return <UserCard user={data.user} isCurrentUser={data.isCurrentUser} />;
 }
 
@@ -83,6 +87,9 @@ export default function TreeView({ orgTree }: TreeViewProps) {
         data: {
           user: node.user,
           isCurrentUser: nodeId === currentUserId,
+          isDepartmentGroup: node.isDepartmentGroup,
+          departmentName: node.departmentName,
+          memberCount: node.isDepartmentGroup ? node.children.length : undefined,
         },
       });
 

@@ -54,3 +54,14 @@ export function isMockMode(): boolean {
   const config = getEnvConfig();
   return !config.clientId || config.clientId === '00000000-0000-0000-0000-000000000000';
 }
+
+/**
+ * Get a specific environment variable with error handling
+ */
+export function getEnvVar(key: string): string {
+  const value = import.meta.env[key];
+  if (!value) {
+    throw new Error(`Environment variable ${key} is not set`);
+  }
+  return value;
+}

@@ -22,6 +22,13 @@ class GraphService {
   }
 
   /**
+   * Get access token for direct API calls
+   */
+  async getAccessToken(): Promise<string> {
+    return authService.getAccessToken();
+  }
+
+  /**
    * Get current user's profile
    */
   async getCurrentUser(): Promise<User> {
@@ -38,7 +45,7 @@ class GraphService {
 
   /**
    * Get all users in the organization
-   * For 45 employees, we can fetch all at once
+   * Filters out unlicensed and blocked users
    */
   async getAllUsers(): Promise<User[]> {
     if (!this.client) throw new Error('Graph client not initialized');
@@ -46,11 +53,17 @@ class GraphService {
     try {
       const response = await this.client
         .api('/users')
-        .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones')
-        .top(100) // More than enough for 45 employees
+        .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses')
+        .filter('accountEnabled eq true') // Only active users
+        .top(100)
         .get();
 
-      return response.value.map(this.mapGraphUser);
+      // Filter to only users with at least one license
+      const licensedUsers = response.value.filter((user: any) =>
+        user.assignedLicenses && user.assignedLicenses.length > 0
+      );
+
+      return licensedUsers.map(this.mapGraphUser);
     } catch (error) {
       console.error('Failed to get all users:', error);
       throw error;
@@ -135,11 +148,22 @@ class GraphService {
     }
 
     // Find the CEO (person with no manager)
-    const ceo = Array.from(userMap.values()).find(entry => entry.managerId === null);
+    console.log('Total users in map:', userMap.size);
+    console.log('User manager IDs:', Array.from(userMap.values()).map(e => ({ name: e.user.displayName, managerId: e.managerId })));
 
-    if (!ceo) {
+    const ceoCandidates = Array.from(userMap.values()).filter(entry => entry.managerId === null);
+    console.log('CEO candidates found:', ceoCandidates.length);
+
+    if (ceoCandidates.length === 0) {
       console.error('No CEO found (no user without manager)');
       return null;
+    }
+
+    // If multiple users have no manager, pick the first one
+    const ceo = ceoCandidates[0];
+
+    if (ceoCandidates.length > 1) {
+      console.warn(`Found ${ceoCandidates.length} users without managers. Using ${ceo.user.displayName} as CEO. Others will appear as siblings.`);
     }
 
     // Recursive function to build tree
@@ -154,7 +178,46 @@ class GraphService {
         .filter(([_, value]) => value.managerId === userId)
         .map(([id]) => id);
 
-      const children = directReportIds.map(id => buildNode(id, level + 1));
+      // Group direct reports by department
+      const departmentGroups = new Map<string, string[]>();
+      for (const reportId of directReportIds) {
+        const reportEntry = userMap.get(reportId);
+        const dept = reportEntry?.user.department || 'Unassigned';
+        if (!departmentGroups.has(dept)) {
+          departmentGroups.set(dept, []);
+        }
+        departmentGroups.get(dept)!.push(reportId);
+      }
+
+      let children: OrgNode[];
+
+      // If there are 3+ departments, group them
+      if (departmentGroups.size >= 3) {
+        console.log(`Grouping ${departmentGroups.size} departments under ${entry.user.displayName}`);
+
+        children = Array.from(departmentGroups.entries()).map(([deptName, memberIds]) => {
+          // Create a department group node using the first member as the representative user
+          const firstMemberId = memberIds[0];
+          const firstMember = userMap.get(firstMemberId)!;
+
+          return {
+            user: {
+              ...firstMember.user,
+              displayName: deptName,
+              jobTitle: `${memberIds.length} member${memberIds.length > 1 ? 's' : ''}`,
+            },
+            managerId: userId,
+            directReports: memberIds,
+            level: level + 1,
+            children: memberIds.map(id => buildNode(id, level + 2)),
+            isDepartmentGroup: true,
+            departmentName: deptName,
+          };
+        });
+      } else {
+        // Normal tree structure - no grouping
+        children = directReportIds.map(id => buildNode(id, level + 1));
+      }
 
       return {
         user: entry.user,
