@@ -35,10 +35,15 @@ class GraphService {
     if (!this.client) throw new Error('Graph client not initialized');
 
     try {
+      console.log('📊 Calling Graph API: /me');
       const user = await this.client.api('/me').get();
+      console.log('✅ Graph API /me success');
       return this.mapGraphUser(user);
-    } catch (error) {
-      console.error('Failed to get current user:', error);
+    } catch (error: any) {
+      console.error('❌ Failed to get current user:', error);
+      console.error('Error status:', error?.statusCode);
+      console.error('Error message:', error?.message);
+      console.error('Error body:', error?.body);
       throw error;
     }
   }

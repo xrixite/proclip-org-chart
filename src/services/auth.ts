@@ -94,14 +94,33 @@ class AuthService {
    */
   private async getTeamsToken(): Promise<string> {
     try {
+      console.log('🔑 Requesting Teams SSO token...');
       const token = await authentication.getAuthToken({
         silent: false,
       });
 
+      console.log('✅ Teams token received');
+      console.log('Token length:', token.length);
+
+      // Decode JWT to see what's inside (for debugging)
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token payload:', {
+          aud: payload.aud,
+          iss: payload.iss,
+          appid: payload.appid,
+          scp: payload.scp,
+          exp: new Date(payload.exp * 1000).toISOString(),
+        });
+      } catch (e) {
+        console.log('Could not decode token payload:', e);
+      }
+
       this.accessToken = token;
       return token;
     } catch (error) {
-      console.error('Failed to get Teams token:', error);
+      console.error('❌ Failed to get Teams token:', error);
+      console.error('Error details:', JSON.stringify(error, null, 2));
       throw error;
     }
   }
