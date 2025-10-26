@@ -52,6 +52,7 @@ export interface AppState {
   isDarkMode: boolean;
   isLoading: boolean;
   error: string | null;
+  isAdmin: boolean;
 
   // Actions
   setUsers: (users: User[]) => void;
@@ -64,6 +65,7 @@ export interface AppState {
   setDarkMode: (isDark: boolean) => void;
   setLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
+  setIsAdmin: (isAdmin: boolean) => void;
 
   // Computed
   getFilteredUsers: () => User[];

@@ -280,6 +280,56 @@ class GraphService {
       businessPhones: graphUser.businessPhones,
     };
   }
+
+  /**
+   * Check if current user has admin role
+   * Checks for Global Administrator, Privileged Role Administrator, or User Administrator
+   */
+  async isUserAdmin(): Promise<boolean> {
+    if (!this.client) throw new Error('Graph client not initialized');
+
+    try {
+      console.log('📊 Checking user admin roles...');
+
+      // Get directory roles for the current user
+      const response = await this.client
+        .api('/me/memberOf')
+        .filter("@odata.type eq 'microsoft.graph.directoryRole'")
+        .get();
+
+      const roles = response.value || [];
+
+      // Admin role template IDs (these are constant across all tenants)
+      const adminRoleTemplateIds = [
+        '62e90394-69f5-4237-9190-012177145e10', // Global Administrator
+        'e8611ab8-c189-46e8-94e1-60213ab1f814', // Privileged Role Administrator
+        'fe930be7-5e62-47db-91af-98c3a49a38b1', // User Administrator
+      ];
+
+      // Check role display names as fallback
+      const adminRoleNames = [
+        'Global Administrator',
+        'Privileged Role Administrator',
+        'User Administrator',
+        'Company Administrator', // Legacy name for Global Admin
+      ];
+
+      const isAdmin = roles.some((role: any) =>
+        adminRoleTemplateIds.includes(role.roleTemplateId) ||
+        adminRoleNames.includes(role.displayName)
+      );
+
+      console.log('✅ User admin check:', isAdmin);
+      return isAdmin;
+    } catch (error: any) {
+      console.error('❌ Failed to check admin roles:', error);
+      console.error('Error status:', error?.statusCode);
+      console.error('Error message:', error?.message);
+
+      // If API call fails, deny access (fail closed)
+      return false;
+    }
+  }
 }
 
 export const graphService = new GraphService();

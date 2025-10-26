@@ -74,6 +74,8 @@ function App() {
     setLoading,
     setError,
     setDarkMode,
+    setIsAdmin,
+    isAdmin,
   } = useStore();
 
   useEffect(() => {
@@ -113,6 +115,10 @@ function App() {
         // Get current user
         const currentUser = await graphService.getCurrentUser();
         setCurrentUserId(currentUser.id);
+
+        // Check if user is admin
+        const userIsAdmin = await graphService.isUserAdmin();
+        setIsAdmin(userIsAdmin);
 
         // Fetch all users
         const allUsers = await graphService.getAllUsers();
@@ -227,7 +233,7 @@ function App() {
               onClick={() => setDarkMode(!isDarkMode)}
               title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
             />
-            {!isMockMode() && (
+            {!isMockMode() && isAdmin && (
               <Button
                 appearance="subtle"
                 icon={<PeopleTeam20Regular />}

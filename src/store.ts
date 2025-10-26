@@ -13,6 +13,7 @@ export const useStore = create<AppState>((set, get) => ({
   isDarkMode: false,
   isLoading: false,
   error: null,
+  isAdmin: false,
 
   // Actions
   setUsers: (users: User[]) => {
@@ -37,6 +38,8 @@ export const useStore = create<AppState>((set, get) => ({
   setLoading: (loading) => set({ isLoading: loading }),
 
   setError: (error) => set({ error }),
+
+  setIsAdmin: (isAdmin) => set({ isAdmin }),
 
   // Computed values
   getFilteredUsers: () => {
