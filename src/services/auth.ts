@@ -166,12 +166,16 @@ class AuthService {
     }
 
     // No accounts and no cached token - need to login
-    // Use redirect instead of popup to avoid popup blockers
-    console.log('Redirecting to Microsoft login...');
-    await this.msalInstance.acquireTokenRedirect({ scopes });
-
-    // This will never execute because acquireTokenRedirect redirects the page
-    throw new Error('Redirect in progress');
+    // Use popup for Teams compatibility
+    console.log('Opening Microsoft login popup...');
+    try {
+      const response = await this.msalInstance.acquireTokenPopup({ scopes });
+      this.accessToken = response.accessToken;
+      return response.accessToken;
+    } catch (popupError) {
+      console.error('Popup login failed:', popupError);
+      throw popupError;
+    }
   }
 
   /**
