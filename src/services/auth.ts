@@ -96,22 +96,29 @@ class AuthService {
       throw new Error('MSAL not initialized');
     }
 
+    console.log('🔑 getMsalToken: Starting token acquisition');
+    console.log('🔑 isInTeams:', this.isInTeams);
+
     // Check for redirect response first (after redirect back from login)
     try {
       const redirectResponse = await this.msalInstance.handleRedirectPromise();
+      console.log('🔑 Redirect response:', redirectResponse ? 'Found' : 'None');
       if (redirectResponse) {
+        console.log('✅ Got token from redirect');
         this.accessToken = redirectResponse.accessToken;
         return redirectResponse.accessToken;
       }
     } catch (error) {
-      console.error('Error handling redirect:', error);
+      console.error('❌ Error handling redirect:', error);
     }
 
     const accounts = this.msalInstance.getAllAccounts();
+    console.log('🔑 Accounts found:', accounts.length);
     const scopes = ['User.Read', 'User.ReadBasic.All', 'User.Read.All'];
 
     // Try silent token acquisition first if we have an account
     if (accounts.length > 0) {
+      console.log('🔑 Attempting silent token acquisition for:', accounts[0].username);
       try {
         const silentRequest = {
           scopes,
@@ -119,12 +126,14 @@ class AuthService {
         };
 
         const response = await this.msalInstance.acquireTokenSilent(silentRequest);
+        console.log('✅ Silent token acquisition successful');
         this.accessToken = response.accessToken;
         return response.accessToken;
       } catch (error) {
+        console.error('❌ Silent token acquisition failed:', error);
         if (error instanceof InteractionRequiredAuthError) {
           // Silent acquisition failed, need interactive login - fall through to interactive flow
-          console.log('Interactive login required');
+          console.log('🔑 Interactive login required');
         } else {
           // Some other error, rethrow
           throw error;
@@ -135,18 +144,20 @@ class AuthService {
     // No accounts or silent acquisition failed - need interactive login
     // Use redirect for Teams desktop (popups are blocked), popup for browser
     if (this.isInTeams) {
-      console.log('Using redirect authentication for Teams desktop...');
+      console.log('🔑 Using redirect authentication for Teams desktop...');
+      console.log('🔑 Scopes:', scopes);
       await this.msalInstance.acquireTokenRedirect({ scopes });
       // This will redirect and never return
       throw new Error('Redirecting to login...');
     } else {
-      console.log('Opening Microsoft login popup...');
+      console.log('🔑 Opening Microsoft login popup...');
       try {
         const response = await this.msalInstance.acquireTokenPopup({ scopes });
+        console.log('✅ Popup login successful');
         this.accessToken = response.accessToken;
         return response.accessToken;
       } catch (popupError) {
-        console.error('Popup login failed:', popupError);
+        console.error('❌ Popup login failed:', popupError);
         throw popupError;
       }
     }
