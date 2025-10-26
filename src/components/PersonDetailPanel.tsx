@@ -26,14 +26,14 @@ const useStyles = makeStyles({
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '12px',
   },
   profile: {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    gap: '12px',
-    paddingTop: '8px',
+    gap: '8px',
+    paddingTop: '4px',
   },
   name: {
     fontSize: tokens.fontSizeBase500,
@@ -54,7 +54,7 @@ const useStyles = makeStyles({
   section: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
   },
   sectionTitle: {
     fontSize: tokens.fontSizeBase300,
@@ -64,7 +64,7 @@ const useStyles = makeStyles({
   infoRow: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '2px',
   },
   label: {
     fontSize: tokens.fontSizeBase200,
@@ -81,7 +81,7 @@ const useStyles = makeStyles({
     flexWrap: 'wrap',
     fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
-    marginBottom: '8px',
+    marginTop: '4px',
   },
   breadcrumbLink: {
     cursor: 'pointer',
@@ -165,7 +165,7 @@ export default function PersonDetailPanel() {
         <div className={styles.profile}>
           <Avatar
             name={user.displayName}
-            size={96}
+            size={72}
             image={user.photoUrl ? { src: user.photoUrl } : undefined}
           />
           <Text className={styles.name}>{user.displayName}</Text>
