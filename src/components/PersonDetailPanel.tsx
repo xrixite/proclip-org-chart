@@ -8,7 +8,6 @@ import {
   Text,
   makeStyles,
   tokens,
-  Divider,
 } from '@fluentui/react-components';
 import { Dismiss24Regular, Call24Regular, Chat24Regular, Mail24Regular } from '@fluentui/react-icons';
 import { chat, call } from '@microsoft/teams-js';
@@ -238,61 +237,48 @@ export default function PersonDetailPanel() {
           </div>
         </div>
 
-        <Divider />
+        {/* All Information - no sections, no dividers */}
+        {user.mail && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Email</Text>
+            <Text className={styles.value}>{user.mail}</Text>
+          </div>
+        )}
 
-        {/* Contact Information */}
-        <div className={styles.section}>
-          <Text className={styles.sectionTitle}>Contact Information</Text>
+        {user.mobilePhone && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Mobile Phone</Text>
+            <Text className={styles.value}>{user.mobilePhone}</Text>
+          </div>
+        )}
 
-          {user.mail && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Email</Text>
-              <Text className={styles.value}>{user.mail}</Text>
-            </div>
-          )}
+        {user.businessPhones && user.businessPhones.length > 0 && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Business Phone</Text>
+            <Text className={styles.value}>{user.businessPhones[0]}</Text>
+          </div>
+        )}
 
-          {user.mobilePhone && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Mobile Phone</Text>
-              <Text className={styles.value}>{user.mobilePhone}</Text>
-            </div>
-          )}
+        {user.department && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Department</Text>
+            <Text className={styles.value}>{user.department}</Text>
+          </div>
+        )}
 
-          {user.businessPhones && user.businessPhones.length > 0 && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Business Phone</Text>
-              <Text className={styles.value}>{user.businessPhones[0]}</Text>
-            </div>
-          )}
-        </div>
+        {user.officeLocation && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Office Location</Text>
+            <Text className={styles.value}>{user.officeLocation}</Text>
+          </div>
+        )}
 
-        <Divider />
-
-        {/* Organization Information */}
-        <div className={styles.section}>
-          <Text className={styles.sectionTitle}>Organization</Text>
-
-          {user.department && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Department</Text>
-              <Text className={styles.value}>{user.department}</Text>
-            </div>
-          )}
-
-          {user.officeLocation && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Office Location</Text>
-              <Text className={styles.value}>{user.officeLocation}</Text>
-            </div>
-          )}
-
-          {directReportsCount > 0 && (
-            <div className={styles.infoRow}>
-              <Text className={styles.label}>Direct Reports</Text>
-              <Text className={styles.value}>{directReportsCount} {directReportsCount === 1 ? 'person' : 'people'}</Text>
-            </div>
-          )}
-        </div>
+        {directReportsCount > 0 && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Direct Reports</Text>
+            <Text className={styles.value}>{directReportsCount} {directReportsCount === 1 ? 'person' : 'people'}</Text>
+          </div>
+        )}
       </DrawerBody>
     </Drawer>
   );
