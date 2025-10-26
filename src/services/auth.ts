@@ -110,9 +110,9 @@ class AuthService {
     const accounts = this.msalInstance.getAllAccounts();
     const scopes = ['User.Read', 'User.ReadBasic.All', 'User.Read.All'];
 
-    try {
-      // Try silent token acquisition first
-      if (accounts.length > 0) {
+    // Try silent token acquisition first if we have an account
+    if (accounts.length > 0) {
+      try {
         const silentRequest = {
           scopes,
           account: accounts[0],
@@ -121,15 +121,18 @@ class AuthService {
         const response = await this.msalInstance.acquireTokenSilent(silentRequest);
         this.accessToken = response.accessToken;
         return response.accessToken;
-      }
-    } catch (error) {
-      if (error instanceof InteractionRequiredAuthError) {
-        // Silent acquisition failed, need interactive login
-        console.log('Interactive login required');
+      } catch (error) {
+        if (error instanceof InteractionRequiredAuthError) {
+          // Silent acquisition failed, need interactive login - fall through to interactive flow
+          console.log('Interactive login required');
+        } else {
+          // Some other error, rethrow
+          throw error;
+        }
       }
     }
 
-    // No accounts and no cached token - need to login
+    // No accounts or silent acquisition failed - need interactive login
     // Use redirect for Teams desktop (popups are blocked), popup for browser
     if (this.isInTeams) {
       console.log('Using redirect authentication for Teams desktop...');
