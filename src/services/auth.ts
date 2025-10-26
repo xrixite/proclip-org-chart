@@ -130,15 +130,22 @@ class AuthService {
     }
 
     // No accounts and no cached token - need to login
-    // Use popup for Teams compatibility
-    console.log('Opening Microsoft login popup...');
-    try {
-      const response = await this.msalInstance.acquireTokenPopup({ scopes });
-      this.accessToken = response.accessToken;
-      return response.accessToken;
-    } catch (popupError) {
-      console.error('Popup login failed:', popupError);
-      throw popupError;
+    // Use redirect for Teams desktop (popups are blocked), popup for browser
+    if (this.isInTeams) {
+      console.log('Using redirect authentication for Teams desktop...');
+      await this.msalInstance.acquireTokenRedirect({ scopes });
+      // This will redirect and never return
+      throw new Error('Redirecting to login...');
+    } else {
+      console.log('Opening Microsoft login popup...');
+      try {
+        const response = await this.msalInstance.acquireTokenPopup({ scopes });
+        this.accessToken = response.accessToken;
+        return response.accessToken;
+      } catch (popupError) {
+        console.error('Popup login failed:', popupError);
+        throw popupError;
+      }
     }
   }
 
