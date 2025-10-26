@@ -17,9 +17,8 @@ import {
   Checkbox,
 } from '@fluentui/react-components';
 import { graphService } from '../services/graph';
+import { storageService } from '../services/storage';
 import { User } from '../types';
-
-const EXCLUDED_USERS_KEY = 'proclip-excluded-users';
 
 const useStyles = makeStyles({
   container: {
@@ -71,17 +70,17 @@ export default function ManagerSetup() {
   const [isSaving, setIsSaving] = useState(false);
   const [status, setStatus] = useState<string>('');
 
-  // Load excluded users from localStorage
+  // Load excluded users from storage service
   useEffect(() => {
-    const stored = localStorage.getItem(EXCLUDED_USERS_KEY);
-    if (stored) {
+    async function loadExcludedUsers() {
       try {
-        const excluded = JSON.parse(stored);
-        setExcludedUsers(new Set(excluded));
+        const excluded = await storageService.getExcludedUsers();
+        setExcludedUsers(excluded);
       } catch (error) {
         console.error('Failed to load excluded users:', error);
       }
     }
+    loadExcludedUsers();
   }, []);
 
   useEffect(() => {
@@ -112,7 +111,7 @@ export default function ManagerSetup() {
     }
   }
 
-  function toggleUserExclusion(userId: string) {
+  async function toggleUserExclusion(userId: string) {
     const newExcluded = new Set(excludedUsers);
     if (newExcluded.has(userId)) {
       newExcluded.delete(userId);
@@ -121,8 +120,13 @@ export default function ManagerSetup() {
     }
     setExcludedUsers(newExcluded);
 
-    // Save to localStorage
-    localStorage.setItem(EXCLUDED_USERS_KEY, JSON.stringify(Array.from(newExcluded)));
+    // Save to storage service (with localStorage fallback)
+    try {
+      await storageService.saveExcludedUsers(newExcluded);
+    } catch (error) {
+      console.error('Failed to save excluded users:', error);
+      // Error is already handled in storage service with fallback
+    }
   }
 
   async function saveManagerRelationships() {

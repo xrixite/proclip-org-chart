@@ -4,6 +4,7 @@ import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular } from
 import { useStore } from './store';
 import { authService } from './services/auth';
 import { graphService } from './services/graph';
+import { storageService } from './services/storage';
 import { isMockMode, mockUsers, buildMockOrgTree } from './mockData';
 import OrgChart from './components/OrgChart';
 import SearchBar from './components/SearchBar';
@@ -116,9 +117,8 @@ function App() {
         // Fetch all users
         const allUsers = await graphService.getAllUsers();
 
-        // Filter out excluded users
-        const excludedUsersJson = localStorage.getItem('proclip-excluded-users');
-        const excludedUserIds = excludedUsersJson ? new Set(JSON.parse(excludedUsersJson)) : new Set();
+        // Filter out excluded users using storage service
+        const excludedUserIds = await storageService.getExcludedUsers();
         const visibleUsers = allUsers.filter(user => !excludedUserIds.has(user.id));
 
         setUsers(visibleUsers);
