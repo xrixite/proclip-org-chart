@@ -27,6 +27,7 @@ export interface OrgNode {
   children: OrgNode[];
   isDepartmentGroup?: boolean; // True if this is a department grouping node
   departmentName?: string; // Name of the department if isDepartmentGroup is true
+  totalMembers?: number; // Total count of all members in the department (including all levels)
 }
 
 /**

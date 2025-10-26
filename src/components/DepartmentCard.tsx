@@ -1,5 +1,6 @@
 import { Card, Text, makeStyles, tokens } from '@fluentui/react-components';
 import { PeopleTeam24Regular } from '@fluentui/react-icons';
+import { Handle, Position } from 'reactflow';
 import { getDepartmentColor } from '../utils/departmentColors';
 
 const useStyles = makeStyles({
@@ -42,22 +43,38 @@ export default function DepartmentCard({ departmentName, memberCount }: Departme
   const colors = getDepartmentColor(departmentName);
 
   return (
-    <Card
-      className={styles.card}
-      style={{
-        backgroundColor: colors.background,
-        borderLeft: `4px solid ${colors.primary}`,
-      }}
-    >
-      <div className={styles.header}>
-        <PeopleTeam24Regular className={styles.icon} style={{ color: colors.primary }} />
-        <div>
-          <Text className={styles.name}>{departmentName}</Text>
+    <>
+      {/* Input handle (for edges coming from parent) */}
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: '#6b7280', border: '2px solid white' }}
+      />
+
+      <Card
+        className={styles.card}
+        style={{
+          backgroundColor: colors.background,
+          borderLeft: `4px solid ${colors.primary}`,
+        }}
+      >
+        <div className={styles.header}>
+          <PeopleTeam24Regular className={styles.icon} style={{ color: colors.primary }} />
+          <div>
+            <Text className={styles.name}>{departmentName}</Text>
+          </div>
         </div>
-      </div>
-      <Text className={styles.count}>
-        {memberCount} member{memberCount !== 1 ? 's' : ''}
-      </Text>
-    </Card>
+        <Text className={styles.count}>
+          {memberCount} member{memberCount !== 1 ? 's' : ''}
+        </Text>
+      </Card>
+
+      {/* Output handle (for edges going to children) */}
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ background: '#6b7280', border: '2px solid white' }}
+      />
+    </>
   );
 }

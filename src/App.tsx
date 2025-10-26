@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
-import { ChevronDown20Regular, WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
+import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button } from '@fluentui/react-components';
+import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
 import { useStore } from './store';
 import { authService } from './services/auth';
 import { graphService } from './services/graph';
@@ -66,31 +66,14 @@ function App() {
     isLoading,
     error,
     selectedUserId,
-    viewMode,
     isDarkMode,
     setUsers,
     setOrgTree,
     setCurrentUserId,
     setLoading,
     setError,
-    setViewMode,
     setDarkMode,
   } = useStore();
-
-  const getViewLabel = () => {
-    switch (viewMode) {
-      case 'reactflow':
-        return 'React Flow';
-      case 'd3-tree':
-        return 'D3 Tree';
-      case 'd3-radial':
-        return 'D3 Radial';
-      case 'list':
-        return 'List';
-      default:
-        return 'React Flow';
-    }
-  };
 
   useEffect(() => {
     async function initializeApp() {
@@ -238,29 +221,6 @@ function App() {
         <div className={styles.header}>
           <Text className={styles.title}>ProClip Organization Chart</Text>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            <Menu>
-              <MenuTrigger>
-                <Button appearance="subtle" icon={<ChevronDown20Regular />} iconPosition="after">
-                  View: {getViewLabel()}
-                </Button>
-              </MenuTrigger>
-              <MenuPopover>
-                <MenuList>
-                  <MenuItem onClick={() => setViewMode('reactflow')}>
-                    React Flow (Interactive)
-                  </MenuItem>
-                  <MenuItem onClick={() => setViewMode('d3-tree')}>
-                    D3 Tree (Classic)
-                  </MenuItem>
-                  <MenuItem onClick={() => setViewMode('d3-radial')}>
-                    D3 Radial (Coming Soon)
-                  </MenuItem>
-                  <MenuItem onClick={() => setViewMode('list')}>
-                    List View (Coming Soon)
-                  </MenuItem>
-                </MenuList>
-              </MenuPopover>
-            </Menu>
             <Button
               appearance="subtle"
               icon={isDarkMode ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}

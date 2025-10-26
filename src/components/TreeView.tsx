@@ -18,27 +18,36 @@ import DepartmentCard from './DepartmentCard';
 import OrgChartEdge from './OrgChartEdge';
 
 /**
- * Custom node component for React Flow
+ * Custom node component that renders either user or department cards
  */
-function CustomNode({ data }: { data: { user: User; isCurrentUser: boolean; isDepartmentGroup?: boolean; departmentName?: string; memberCount?: number } }) {
-  console.log(`CustomNode render - isDepartmentGroup: ${data.isDepartmentGroup}, departmentName: ${data.departmentName}`);
-
-  if (data.isDepartmentGroup && data.departmentName) {
-    console.log(`✅ Rendering DepartmentCard: ${data.departmentName} with ${data.memberCount} members`);
+function CustomNode({ data }: { data: any }) {
+  // Check if this is a department node
+  if (data.departmentName) {
+    console.log(`[CustomNode] Rendering DEPARTMENT: ${data.departmentName}`);
     return <DepartmentCard departmentName={data.departmentName} memberCount={data.memberCount || 0} />;
   }
 
-  console.log(`Rendering UserCard for: ${data.user.displayName}`);
-  return <UserCard user={data.user} isCurrentUser={data.isCurrentUser} />;
+  // Otherwise render a user card
+  console.log(`[CustomNode] Rendering USER: ${data.user?.displayName} with ${data.childrenCount} children`);
+  return <UserCard
+    user={data.user}
+    isCurrentUser={data.isCurrentUser || false}
+    directReportsCount={data.childrenCount || 0}
+  />;
 }
 
+CustomNode.displayName = 'CustomNode';
+
+// Define node types OUTSIDE component
 const nodeTypes = {
-  userCard: CustomNode,
+  custom: CustomNode,
 };
 
 const edgeTypes = {
   orgChart: OrgChartEdge,
 };
+
+console.log('[TreeView MODULE] nodeTypes defined:', Object.keys(nodeTypes));
 
 interface TreeViewProps {
   orgTree: OrgNode;
@@ -90,25 +99,41 @@ export default function TreeView({ orgTree }: TreeViewProps) {
         console.log(`  isDepartmentGroup: ${node.isDepartmentGroup}, departmentName: ${node.departmentName}`);
       }
 
-      // Add node
-      const nodeData = {
-        user: node.user,
-        isCurrentUser: nodeId === currentUserId,
-        isDepartmentGroup: node.isDepartmentGroup,
-        departmentName: node.departmentName,
-        memberCount: node.isDepartmentGroup ? node.children.length : undefined,
-      };
-
+      // Add node - all nodes use the same 'custom' type, but with different data
       if (node.isDepartmentGroup) {
-        console.log(`  Node data being added:`, nodeData);
-      }
+        console.log(`  Adding DEPARTMENT node: ${node.departmentName} with ${node.totalMembers} total members`);
+        // Use a unique ID for department nodes by prefixing with "dept-"
+        nodes.push({
+          id: `dept-${nodeId}`,
+          type: 'custom',
+          position: { x, y },
+          data: {
+            departmentName: node.departmentName!,
+            memberCount: node.totalMembers || node.children.length, // Use totalMembers if available
+          },
+        });
+      } else {
+        // Calculate total descendants (entire team size), excluding department nodes
+        const countAllDescendants = (n: OrgNode): number => {
+          return n.children.reduce((sum, child) => {
+            // Don't count department nodes as people, only count actual users
+            const childCount = child.isDepartmentGroup ? 0 : 1;
+            return sum + childCount + countAllDescendants(child);
+          }, 0);
+        };
+        const totalTeamSize = countAllDescendants(node);
 
-      nodes.push({
-        id: nodeId,
-        type: 'userCard',
-        position: { x, y },
-        data: nodeData,
-      });
+        nodes.push({
+          id: nodeId,
+          type: 'custom',
+          position: { x, y },
+          data: {
+            user: node.user,
+            isCurrentUser: nodeId === currentUserId,
+            childrenCount: totalTeamSize, // Pass total team size (all descendants)
+          },
+        });
+      }
 
       // Calculate children positions
       if (node.children.length > 0) {
@@ -141,10 +166,14 @@ export default function TreeView({ orgTree }: TreeViewProps) {
               const child = node.children[childIndex];
               const childX = startX + (col * horizontalSpacing);
 
+              // Use dept- prefix for department node IDs
+              const sourceId = node.isDepartmentGroup ? `dept-${nodeId}` : nodeId;
+              const targetId = child.isDepartmentGroup ? `dept-${child.user.id}` : child.user.id;
+
               edges.push({
-                id: `${nodeId}-${child.user.id}`,
-                source: nodeId,
-                target: child.user.id,
+                id: `${sourceId}-${targetId}`,
+                source: sourceId,
+                target: targetId,
                 type: 'orgChart',
                 animated: false,
                 style: { stroke: '#6b7280', strokeWidth: 2 },
@@ -174,10 +203,14 @@ export default function TreeView({ orgTree }: TreeViewProps) {
           let currentX = x - totalWidth / 2;
 
           node.children.forEach((child) => {
+            // Use dept- prefix for department node IDs
+            const sourceId = node.isDepartmentGroup ? `dept-${nodeId}` : nodeId;
+            const targetId = child.isDepartmentGroup ? `dept-${child.user.id}` : child.user.id;
+
             edges.push({
-              id: `${nodeId}-${child.user.id}`,
-              source: nodeId,
-              target: child.user.id,
+              id: `${sourceId}-${targetId}`,
+              source: sourceId,
+              target: targetId,
               type: 'orgChart',
               animated: false,
               style: { stroke: '#6b7280', strokeWidth: 2 },
@@ -215,7 +248,15 @@ export default function TreeView({ orgTree }: TreeViewProps) {
   // Highlight matching nodes based on search and/or department filter
   const highlightedNodes = useMemo(() => {
     const hasFilter = searchQuery.trim() || departmentFilter;
-    if (!hasFilter) return initialNodes;
+    if (!hasFilter) {
+      console.log('[TreeView] No filter, returning initialNodes');
+      // Log first department node to verify data
+      const deptNode = initialNodes.find(n => n.data?.departmentName);
+      if (deptNode) {
+        console.log('[TreeView] Department node in initialNodes:', deptNode.data);
+      }
+      return initialNodes;
+    }
 
     const filteredUsers = getFilteredUsers();
     const filteredUserIds = new Set(filteredUsers.map(u => u.id));
@@ -230,13 +271,12 @@ export default function TreeView({ orgTree }: TreeViewProps) {
     }));
   }, [initialNodes, searchQuery, departmentFilter, getFilteredUsers]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(highlightedNodes);
-  const [edges, , onEdgesChange] = useEdgesState(initialEdges);
-
-  // Update nodes when search changes
-  useEffect(() => {
-    setNodes(highlightedNodes);
-  }, [highlightedNodes, setNodes]);
+  // Force complete remount by including node types in key
+  const reactFlowKey = useMemo(() => {
+    const deptCount = highlightedNodes.filter(n => n.type === 'departmentCard').length;
+    const userCount = highlightedNodes.filter(n => n.type === 'userCard').length;
+    return `dept${deptCount}-user${userCount}-edges${initialEdges.length}`;
+  }, [highlightedNodes, initialEdges.length]);
 
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstance.current = instance;
@@ -254,7 +294,7 @@ export default function TreeView({ orgTree }: TreeViewProps) {
     const filteredUsers = getFilteredUsers();
     if (filteredUsers.length > 0) {
       const firstMatch = filteredUsers[0];
-      const node = nodes.find(n => n.id === firstMatch.id);
+      const node = highlightedNodes.find(n => n.id === firstMatch.id);
 
       if (node) {
         // Zoom to the matched node
@@ -264,7 +304,26 @@ export default function TreeView({ orgTree }: TreeViewProps) {
         });
       }
     }
-  }, [searchQuery, departmentFilter, getFilteredUsers, nodes]);
+  }, [searchQuery, departmentFilter, getFilteredUsers, highlightedNodes]);
+
+  // Final check before passing to ReactFlow
+  console.log('[TreeView] FINAL CHECK - highlightedNodes being passed to ReactFlow:', highlightedNodes.length);
+  const deptNodesCount = highlightedNodes.filter(n => n.data?.departmentName).length;
+  const userNodesCount = highlightedNodes.filter(n => n.data?.user).length;
+  console.log('[TreeView] Node counts - department:', deptNodesCount, 'user:', userNodesCount);
+
+  const finalDeptNode = highlightedNodes.find(n => n.data?.departmentName);
+  const finalUserNode = highlightedNodes.find(n => n.data?.user);
+
+  if (finalDeptNode) {
+    console.log('[TreeView] FINAL - Department node FULL:', finalDeptNode);
+  }
+
+  if (finalUserNode) {
+    console.log('[TreeView] FINAL - User node FULL:', finalUserNode);
+  }
+
+  console.log('[TreeView] ALL nodes being passed:', highlightedNodes);
 
   return (
     <div style={{
@@ -274,19 +333,16 @@ export default function TreeView({ orgTree }: TreeViewProps) {
       backgroundColor: isDarkMode ? '#1f2937' : '#ffffff',
     }}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onInit={onInit}
+        key={reactFlowKey}
+        nodes={highlightedNodes}
+        edges={initialEdges}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
+        onInit={onInit}
         fitView
         minZoom={0.1}
         maxZoom={1.5}
-        defaultEdgeOptions={{
-          style: { strokeWidth: 2 },
-        }}
+        proOptions={{ hideAttribution: true }}
       >
         <Background
           variant={BackgroundVariant.Dots}

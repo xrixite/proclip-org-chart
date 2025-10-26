@@ -182,7 +182,8 @@ class GraphService {
       const departmentGroups = new Map<string, string[]>();
       for (const reportId of directReportIds) {
         const reportEntry = userMap.get(reportId);
-        const dept = reportEntry?.user.department || 'Unassigned';
+        // Trim department name to remove leading/trailing spaces
+        const dept = (reportEntry?.user.department || 'Unassigned').trim();
         if (!departmentGroups.has(dept)) {
           departmentGroups.set(dept, []);
         }
@@ -191,11 +192,20 @@ class GraphService {
 
       let children: OrgNode[];
 
-      // If there are 3+ departments, create department header nodes
-      if (departmentGroups.size >= 3) {
+      // If there are 2+ departments with multiple members each, create department header nodes
+      if (departmentGroups.size >= 2) {
         console.log(`Creating department headers for ${departmentGroups.size} departments under ${entry.user.displayName}`);
 
         children = Array.from(departmentGroups.entries()).map(([deptName, memberIds]) => {
+          // Build children first so we can count total descendants
+          const childNodes = memberIds.map(id => buildNode(id, level + 2));
+
+          // Count total members in this department (including all levels)
+          const countDescendants = (node: OrgNode): number => {
+            return 1 + node.children.reduce((sum, child) => sum + countDescendants(child), 0);
+          };
+          const totalMembers = childNodes.reduce((sum, child) => sum + countDescendants(child), 0);
+
           // Create a department header node
           const firstMemberId = memberIds[0];
           const firstMember = userMap.get(firstMemberId)!;
@@ -204,14 +214,15 @@ class GraphService {
             user: {
               ...firstMember.user,
               displayName: deptName,
-              jobTitle: `${memberIds.length} member${memberIds.length > 1 ? 's' : ''}`,
+              jobTitle: `${totalMembers} member${totalMembers > 1 ? 's' : ''}`,
             },
             managerId: userId,
             directReports: memberIds,
             level: level + 1,
-            children: memberIds.map(id => buildNode(id, level + 2)), // Build children under department header
+            children: childNodes,
             isDepartmentGroup: true,
             departmentName: deptName,
+            totalMembers, // Store for department card display
           };
         });
       } else {

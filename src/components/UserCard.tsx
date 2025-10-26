@@ -71,13 +71,15 @@ const useStyles = makeStyles({
 interface UserCardProps {
   user: User;
   isCurrentUser?: boolean;
+  directReportsCount?: number; // Optional override for actual children count in the rendered tree
 }
 
-function UserCard({ user, isCurrentUser }: UserCardProps) {
+function UserCard({ user, isCurrentUser, directReportsCount: providedCount }: UserCardProps) {
   const styles = useStyles();
   const { selectedUserId, setSelectedUserId, getDirectReportsCount, isDarkMode } = useStore();
   const isSelected = selectedUserId === user.id;
-  const directReportsCount = getDirectReportsCount(user.id);
+  // Use provided count if available (from tree structure), otherwise fall back to store
+  const directReportsCount = providedCount !== undefined ? providedCount : getDirectReportsCount(user.id);
   const departmentColor = getDepartmentColor(user.department, isDarkMode);
 
   const handleClick = () => {

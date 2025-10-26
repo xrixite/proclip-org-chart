@@ -105,6 +105,136 @@ const departmentColorMap: Record<string, DepartmentColorScheme> = {
       border: '#a78bfa',
     },
   },
+  'Logistics': {
+    light: {
+      background: '#cffafe', // soft cyan
+      border: '#06b6d4',
+    },
+    dark: {
+      background: '#164e63', // dark cyan
+      border: '#22d3ee',
+    },
+  },
+  'Warehouse': {
+    light: {
+      background: '#fef9c3', // soft lime
+      border: '#84cc16',
+    },
+    dark: {
+      background: '#365314', // dark lime
+      border: '#a3e635',
+    },
+  },
+  'Customer Experience': {
+    light: {
+      background: '#fce7f3', // soft magenta/pink
+      border: '#db2777',
+    },
+    dark: {
+      background: '#9f1239', // dark magenta
+      border: '#f9a8d4',
+    },
+  },
+  'Accounting': {
+    light: {
+      background: '#ddd6fe', // soft violet (different from Finance)
+      border: '#8b5cf6',
+    },
+    dark: {
+      background: '#5b21b6', // dark violet
+      border: '#a78bfa',
+    },
+  },
+  'IT': {
+    light: {
+      background: '#e0e7ff', // soft indigo
+      border: '#6366f1',
+    },
+    dark: {
+      background: '#312e81', // dark indigo
+      border: '#818cf8',
+    },
+  },
+  'E-Commerce': {
+    light: {
+      background: '#fbcfe8', // soft pink
+      border: '#ec4899',
+    },
+    dark: {
+      background: '#831843', // dark pink
+      border: '#f9a8d4',
+    },
+  },
+  'Sales/B2B': {
+    light: {
+      background: '#d1fae5', // soft emerald (different from Sales)
+      border: '#059669',
+    },
+    dark: {
+      background: '#064e3b', // dark emerald
+      border: '#10b981',
+    },
+  },
+  'Creative': {
+    light: {
+      background: '#f5d0fe', // soft purple/fuchsia (different from Product/Customer Experience)
+      border: '#d946ef',
+    },
+    dark: {
+      background: '#701a75', // dark fuchsia
+      border: '#e879f9',
+    },
+  },
+  'Product Engineering': {
+    light: {
+      background: '#bfdbfe', // soft blue (different from Engineering)
+      border: '#2563eb',
+    },
+    dark: {
+      background: '#1e3a8a', // dark blue
+      border: '#60a5fa',
+    },
+  },
+  'Product Data': {
+    light: {
+      background: '#e0f2fe', // soft cyan/sky (different from IT)
+      border: '#0ea5e9',
+    },
+    dark: {
+      background: '#075985', // dark cyan
+      border: '#38bdf8',
+    },
+  },
+  'HR': {
+    light: {
+      background: '#fecdd3', // soft rose
+      border: '#f43f5e',
+    },
+    dark: {
+      background: '#881337', // dark rose
+      border: '#fb7185',
+    },
+  },
+  'B2B': {
+    light: {
+      background: '#d1fae5', // soft emerald
+      border: '#059669',
+    },
+    dark: {
+      background: '#064e3b', // dark emerald
+      border: '#10b981',
+    },
+  },
+  'Product & Marketing': {
+    light: {
+      background: '#fed7aa', // soft orange (similar to Marketing but distinct)
+      border: '#ea580c',
+    },
+    dark: {
+      background: '#7c2d12', // dark orange
+      border: '#fb923c',
+    },
+  },
 };
 
 const defaultColor: DepartmentColorScheme = {
