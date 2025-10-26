@@ -49,6 +49,31 @@ class GraphService {
   }
 
   /**
+   * Get user photo URL
+   */
+  async getUserPhoto(userId: string): Promise<string | undefined> {
+    if (!this.client) throw new Error('Graph client not initialized');
+
+    try {
+      // Try to get photo blob
+      const photoBlob = await this.client
+        .api(`/users/${userId}/photo/$value`)
+        .get();
+
+      // Convert blob to object URL
+      const url = URL.createObjectURL(photoBlob);
+      return url;
+    } catch (error: any) {
+      // User might not have a photo - this is normal, not an error
+      if (error?.statusCode === 404) {
+        return undefined;
+      }
+      console.warn(`Could not fetch photo for user ${userId}:`, error?.message);
+      return undefined;
+    }
+  }
+
+  /**
    * Get all users in the organization
    * Filters out unlicensed and blocked users
    */
@@ -83,11 +108,40 @@ class GraphService {
 
       console.log(`${licensedUsers.length} users have licenses assigned`);
 
-      return licensedUsers.map(this.mapGraphUser);
+      // Map users
+      const users = licensedUsers.map(this.mapGraphUser);
+
+      // Fetch photos for all users (in parallel, but limit concurrency)
+      console.log(`📸 Fetching photos for ${users.length} users...`);
+      await this.fetchPhotosForUsers(users);
+
+      return users;
     } catch (error) {
       console.error('Failed to get all users:', error);
       throw error;
     }
+  }
+
+  /**
+   * Fetch photos for multiple users in parallel with concurrency limit
+   */
+  private async fetchPhotosForUsers(users: User[]): Promise<void> {
+    const BATCH_SIZE = 10; // Process 10 photos at a time
+
+    for (let i = 0; i < users.length; i += BATCH_SIZE) {
+      const batch = users.slice(i, i + BATCH_SIZE);
+
+      await Promise.all(
+        batch.map(async (user) => {
+          const photoUrl = await this.getUserPhoto(user.id);
+          if (photoUrl) {
+            user.photoUrl = photoUrl;
+          }
+        })
+      );
+    }
+
+    console.log(`✅ Fetched photos for ${users.filter(u => u.photoUrl).length}/${users.length} users`);
   }
 
   /**
@@ -125,22 +179,6 @@ class GraphService {
     } catch (error) {
       console.error(`Failed to get direct reports for user ${userId}:`, error);
       return [];
-    }
-  }
-
-  /**
-   * Get user's photo as blob URL
-   */
-  async getUserPhoto(userId: string): Promise<string | null> {
-    if (!this.client) throw new Error('Graph client not initialized');
-
-    try {
-      const photo = await this.client.api(`/users/${userId}/photo/$value`).get();
-      const blob = new Blob([photo], { type: 'image/jpeg' });
-      return URL.createObjectURL(blob);
-    } catch (error) {
-      // Photo might not exist
-      return null;
     }
   }
 
