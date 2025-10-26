@@ -1,7 +1,7 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
   "manifestVersion": "1.17",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "id": "06e1a3a4-3a77-4d3d-952a-f53bddd4d02c",
   "developer": {
     "name": "ProClip",
