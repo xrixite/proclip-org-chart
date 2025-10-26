@@ -21,9 +21,14 @@ import OrgChartEdge from './OrgChartEdge';
  * Custom node component for React Flow
  */
 function CustomNode({ data }: { data: { user: User; isCurrentUser: boolean; isDepartmentGroup?: boolean; departmentName?: string; memberCount?: number } }) {
+  console.log(`CustomNode render - isDepartmentGroup: ${data.isDepartmentGroup}, departmentName: ${data.departmentName}`);
+
   if (data.isDepartmentGroup && data.departmentName) {
+    console.log(`✅ Rendering DepartmentCard: ${data.departmentName} with ${data.memberCount} members`);
     return <DepartmentCard departmentName={data.departmentName} memberCount={data.memberCount || 0} />;
   }
+
+  console.log(`Rendering UserCard for: ${data.user.displayName}`);
   return <UserCard user={data.user} isCurrentUser={data.isCurrentUser} />;
 }
 
@@ -79,18 +84,30 @@ export default function TreeView({ orgTree }: TreeViewProps) {
     function calculatePositions(node: OrgNode, x: number, y: number, level: number) {
       const nodeId = node.user.id;
 
+      // Debug logging for department groups
+      if (node.isDepartmentGroup) {
+        console.log(`Rendering department group: ${node.departmentName} with ${node.children.length} children`);
+        console.log(`  isDepartmentGroup: ${node.isDepartmentGroup}, departmentName: ${node.departmentName}`);
+      }
+
       // Add node
+      const nodeData = {
+        user: node.user,
+        isCurrentUser: nodeId === currentUserId,
+        isDepartmentGroup: node.isDepartmentGroup,
+        departmentName: node.departmentName,
+        memberCount: node.isDepartmentGroup ? node.children.length : undefined,
+      };
+
+      if (node.isDepartmentGroup) {
+        console.log(`  Node data being added:`, nodeData);
+      }
+
       nodes.push({
         id: nodeId,
         type: 'userCard',
         position: { x, y },
-        data: {
-          user: node.user,
-          isCurrentUser: nodeId === currentUserId,
-          isDepartmentGroup: node.isDepartmentGroup,
-          departmentName: node.departmentName,
-          memberCount: node.isDepartmentGroup ? node.children.length : undefined,
-        },
+        data: nodeData,
       });
 
       // Calculate children positions
