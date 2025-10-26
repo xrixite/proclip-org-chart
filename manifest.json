@@ -1,14 +1,13 @@
 {
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
   "manifestVersion": "1.17",
-  "version": "1.0.0",
-  "id": "your-app-id-here",
-  "packageName": "com.proclip.orgchart",
+  "version": "1.0.7",
+  "id": "06e1a3a4-3a77-4d3d-952a-f53bddd4d02c",
   "developer": {
     "name": "ProClip",
-    "websiteUrl": "https://www.proclip.com",
-    "privacyUrl": "https://www.proclip.com/privacy",
-    "termsOfUseUrl": "https://www.proclip.com/terms"
+    "websiteUrl": "https://proclip-org-chart.vercel.app",
+    "privacyUrl": "https://proclip-org-chart.vercel.app",
+    "termsOfUseUrl": "https://proclip-org-chart.vercel.app"
   },
   "icons": {
     "color": "icon-color.png",
@@ -28,8 +27,8 @@
     {
       "entityId": "orgchart",
       "name": "Org Chart",
-      "contentUrl": "https://your-domain.com/",
-      "websiteUrl": "https://your-domain.com/",
+      "contentUrl": "https://proclip-org-chart.vercel.app/",
+      "websiteUrl": "https://proclip-org-chart.vercel.app/",
       "scopes": ["personal"]
     }
   ],
@@ -38,10 +37,13 @@
     "messageTeamMembers"
   ],
   "validDomains": [
-    "your-domain.com"
+    "proclip-org-chart.vercel.app",
+    "*.vercel.app",
+    "login.microsoftonline.com",
+    "*.login.microsoftonline.com"
   ],
   "webApplicationInfo": {
-    "id": "your-azure-app-client-id",
-    "resource": "api://your-domain.com/your-azure-app-client-id"
+    "id": "06e1a3a4-3a77-4d3d-952a-f53bddd4d02c",
+    "resource": "api://proclip-org-chart.vercel.app/06e1a3a4-3a77-4d3d-952a-f53bddd4d02c"
   }
 }

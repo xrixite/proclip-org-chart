@@ -95,7 +95,6 @@ class AuthService {
   private async getTeamsToken(): Promise<string> {
     try {
       const token = await authentication.getAuthToken({
-        resources: ['https://graph.microsoft.com'],
         silent: false,
       });
 
