@@ -51,17 +51,32 @@ class GraphService {
     if (!this.client) throw new Error('Graph client not initialized');
 
     try {
-      const response = await this.client
-        .api('/users')
-        .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses')
-        .filter('accountEnabled eq true') // Only active users
-        .top(100)
-        .get();
+      let allUsers: any[] = [];
+      let nextLink: string | undefined = undefined;
+
+      // Fetch all pages of users
+      do {
+        const response: any = nextLink
+          ? await this.client.api(nextLink).get()
+          : await this.client
+              .api('/users')
+              .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses')
+              .filter('accountEnabled eq true') // Only active users
+              .top(999) // Max page size
+              .get();
+
+        allUsers = allUsers.concat(response.value);
+        nextLink = response['@odata.nextLink'];
+      } while (nextLink);
+
+      console.log(`Fetched ${allUsers.length} active users from Microsoft 365`);
 
       // Filter to only users with at least one license
-      const licensedUsers = response.value.filter((user: any) =>
+      const licensedUsers = allUsers.filter((user: any) =>
         user.assignedLicenses && user.assignedLicenses.length > 0
       );
+
+      console.log(`${licensedUsers.length} users have licenses assigned`);
 
       return licensedUsers.map(this.mapGraphUser);
     } catch (error) {

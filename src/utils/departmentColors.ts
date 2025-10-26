@@ -253,6 +253,6 @@ export function getDepartmentColor(department?: string, isDarkMode: boolean = fa
   return isDarkMode ? colorScheme.dark : colorScheme.light;
 }
 
-export function getAllDepartmentColors(): Map<string, DepartmentColor> {
+export function getAllDepartmentColors(): Map<string, DepartmentColorScheme> {
   return new Map(Object.entries(departmentColorMap));
 }

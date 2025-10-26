@@ -55,11 +55,11 @@ export default function DepartmentCard({ departmentName, memberCount }: Departme
         className={styles.card}
         style={{
           backgroundColor: colors.background,
-          borderLeft: `4px solid ${colors.primary}`,
+          borderLeft: `4px solid ${colors.border}`,
         }}
       >
         <div className={styles.header}>
-          <PeopleTeam24Regular className={styles.icon} style={{ color: colors.primary }} />
+          <PeopleTeam24Regular className={styles.icon} style={{ color: colors.border }} />
           <div>
             <Text className={styles.name}>{departmentName}</Text>
           </div>

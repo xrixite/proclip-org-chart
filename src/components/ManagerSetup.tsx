@@ -276,11 +276,15 @@ export default function ManagerSetup() {
                       setSelectedManagers(newMap);
                     }}
                   >
-                    <Option value="">None (CEO)</Option>
+                    <Option text="None (CEO)" value="">None (CEO)</Option>
                     {users
                       .filter((u) => u.id !== user.id)
                       .map((manager) => (
-                        <Option key={manager.id} value={manager.id}>
+                        <Option
+                          key={manager.id}
+                          value={manager.id}
+                          text={`${manager.displayName}${manager.jobTitle ? ` - ${manager.jobTitle}` : ''}`}
+                        >
                           {manager.displayName}
                           {manager.jobTitle ? ` - ${manager.jobTitle}` : ''}
                         </Option>

@@ -5,13 +5,11 @@ import ReactFlow, {
   Controls,
   Background,
   BackgroundVariant,
-  useNodesState,
-  useEdgesState,
   MarkerType,
   ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { OrgNode, User } from '../types';
+import { OrgNode } from '../types';
 import { useStore } from '../store';
 import UserCard from './UserCard';
 import DepartmentCard from './DepartmentCard';
