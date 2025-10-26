@@ -26,7 +26,7 @@ const useStyles = makeStyles({
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '4px',
   },
   profile: {
     display: 'flex',
