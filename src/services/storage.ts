@@ -3,7 +3,7 @@
  * Uses backend API for centralized storage shared across all users
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://proclip-org-chart.vercel.app';
 
 export class StorageService {
   /**
