@@ -118,6 +118,7 @@ function App() {
 
         // Check if user is admin
         const userIsAdmin = await graphService.isUserAdmin();
+        console.log('User is admin:', userIsAdmin);
         setIsAdmin(userIsAdmin);
 
         // Fetch all users

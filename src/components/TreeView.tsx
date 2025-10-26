@@ -284,23 +284,24 @@ export default function TreeView({ orgTree }: TreeViewProps) {
     }, 200);
   }, []);
 
-  // Zoom to first search/filter result
+  // Zoom to search/filter results
   useEffect(() => {
     const hasFilter = searchQuery.trim() || departmentFilter;
     if (!reactFlowInstance.current || !hasFilter) return;
 
     const filteredUsers = getFilteredUsers();
     if (filteredUsers.length > 0) {
-      const firstMatch = filteredUsers[0];
-      const node = highlightedNodes.find(n => n.id === firstMatch.id);
+      // Get all nodes that match the filter
+      const matchingNodeIds = filteredUsers.map(u => u.id);
 
-      if (node) {
-        // Zoom to the matched node
-        reactFlowInstance.current.setCenter(node.position.x + 100, node.position.y, {
-          zoom: 1.2,
+      // Fit view to show all matching nodes with padding
+      setTimeout(() => {
+        reactFlowInstance.current?.fitView({
+          padding: 0.2,
           duration: 800,
+          nodes: matchingNodeIds.map(id => ({ id })),
         });
-      }
+      }, 100);
     }
   }, [searchQuery, departmentFilter, getFilteredUsers, highlightedNodes]);
 

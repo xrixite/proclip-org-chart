@@ -2,6 +2,7 @@ import { Card, Text, makeStyles, tokens } from '@fluentui/react-components';
 import { PeopleTeam24Regular } from '@fluentui/react-icons';
 import { Handle, Position } from 'reactflow';
 import { getDepartmentColor } from '../utils/departmentColors';
+import { useStore } from '../store';
 
 const useStyles = makeStyles({
   card: {
@@ -40,7 +41,8 @@ interface DepartmentCardProps {
 
 export default function DepartmentCard({ departmentName, memberCount }: DepartmentCardProps) {
   const styles = useStyles();
-  const colors = getDepartmentColor(departmentName);
+  const { isDarkMode } = useStore();
+  const colors = getDepartmentColor(departmentName, isDarkMode);
 
   return (
     <>

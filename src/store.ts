@@ -71,12 +71,13 @@ export const useStore = create<AppState>((set, get) => ({
   },
 
   getDirectReports: (managerId: string) => {
-    const { orgTree } = get();
+    const { orgTree, users } = get();
     if (!orgTree) return [];
 
-    // Recursively find the node for the manager
+    // Recursively find the node for the manager (skip department groups)
     function findNode(node: OrgNode, targetId: string): OrgNode | null {
-      if (node.user.id === targetId) return node;
+      // Only match if this is NOT a department group and the ID matches
+      if (!node.isDepartmentGroup && node.user.id === targetId) return node;
       for (const child of node.children) {
         const found = findNode(child, targetId);
         if (found) return found;
@@ -85,12 +86,40 @@ export const useStore = create<AppState>((set, get) => ({
     }
 
     const managerNode = findNode(orgTree, managerId);
-    if (!managerNode) return [];
+    if (!managerNode) {
+      console.log('Manager node not found for:', managerId);
+      return [];
+    }
 
-    // Return users from direct reports
-    return managerNode.directReports
-      .map(id => get().users.get(id))
-      .filter((user): user is User => user !== undefined);
+    console.log('Manager node found:', managerNode.user.displayName, 'children:', managerNode.children.length);
+
+    // Collect all actual users (not department groups) from children
+    const directReports: User[] = [];
+
+    function collectUsers(node: OrgNode) {
+      console.log('Processing node:', node.user.displayName, 'isDepartmentGroup:', node.isDepartmentGroup);
+      if (node.isDepartmentGroup) {
+        // If this is a department group, collect users from its children
+        for (const child of node.children) {
+          collectUsers(child);
+        }
+      } else {
+        // This is an actual user, add them to direct reports
+        const user = users.get(node.user.id);
+        if (user) {
+          console.log('Adding direct report:', user.displayName);
+          directReports.push(user);
+        }
+      }
+    }
+
+    // Process all children of the manager
+    for (const child of managerNode.children) {
+      collectUsers(child);
+    }
+
+    console.log('Total direct reports found:', directReports.length);
+    return directReports;
   },
 
   getManager: (userId: string) => {

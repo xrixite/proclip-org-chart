@@ -329,13 +329,17 @@ class GraphService {
     try {
       console.log('📊 Checking user admin roles...');
 
-      // Get directory roles for the current user
+      // Get all memberships (groups and roles) for the current user
       const response = await this.client
         .api('/me/memberOf')
-        .filter("@odata.type eq 'microsoft.graph.directoryRole'")
         .get();
 
-      const roles = response.value || [];
+      const memberships = response.value || [];
+
+      // Filter to only directory roles
+      const roles = memberships.filter((m: any) => m['@odata.type'] === '#microsoft.graph.directoryRole');
+
+      console.log('User roles:', roles.map((r: any) => ({ id: r.roleTemplateId, name: r.displayName })));
 
       // Admin role template IDs (these are constant across all tenants)
       const adminRoleTemplateIds = [

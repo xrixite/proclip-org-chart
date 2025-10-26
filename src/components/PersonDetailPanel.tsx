@@ -25,44 +25,68 @@ const useStyles = makeStyles({
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: '16px',
   },
   profile: {
     display: 'flex',
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: '12px',
-    paddingTop: '4px',
-  },
-  profileInfo: {
-    display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
-    flex: 1,
+    alignItems: 'center',
+    gap: '8px',
+    paddingTop: '8px',
   },
   name: {
-    fontSize: tokens.fontSizeBase400,
+    fontSize: tokens.fontSizeBase500,
     fontWeight: tokens.fontWeightSemibold,
+    textAlign: 'center',
   },
   title: {
     fontSize: tokens.fontSizeBase300,
     color: tokens.colorNeutralForeground2,
+    textAlign: 'center',
   },
   actions: {
-    display: 'flex',
-    gap: '6px',
-    flexWrap: 'wrap',
-    marginTop: '4px',
+    display: 'grid',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: '8px',
+    width: '100%',
+    marginTop: '8px',
   },
-  section: {
+  infoSection: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  directReportsList: {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    marginTop: '8px',
   },
-  sectionTitle: {
+  directReportItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    padding: '8px',
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusMedium,
+    cursor: 'pointer',
+    ':hover': {
+      backgroundColor: tokens.colorNeutralBackground2Hover,
+    },
+  },
+  directReportInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '2px',
+    flex: 1,
+  },
+  directReportName: {
     fontSize: tokens.fontSizeBase300,
     fontWeight: tokens.fontWeightSemibold,
-    color: tokens.colorNeutralForeground1,
+  },
+  directReportTitle: {
+    fontSize: tokens.fontSizeBase200,
+    color: tokens.colorNeutralForeground3,
   },
   infoRow: {
     display: 'flex',
@@ -82,9 +106,10 @@ const useStyles = makeStyles({
     alignItems: 'center',
     gap: '4px',
     flexWrap: 'wrap',
-    fontSize: tokens.fontSizeBase100,
+    fontSize: tokens.fontSizeBase200,
     color: tokens.colorNeutralForeground2,
-    marginTop: '2px',
+    marginTop: '4px',
+    justifyContent: 'center',
   },
   breadcrumbLink: {
     cursor: 'pointer',
@@ -100,7 +125,7 @@ const useStyles = makeStyles({
 
 export default function PersonDetailPanel() {
   const styles = useStyles();
-  const { selectedUserId, getUserById, setSelectedUserId, getManagerChain, getDirectReportsCount } = useStore();
+  const { selectedUserId, getUserById, setSelectedUserId, getManagerChain, getDirectReports } = useStore();
 
   if (!selectedUserId) return null;
 
@@ -109,7 +134,7 @@ export default function PersonDetailPanel() {
   if (!user) return null;
 
   const managerChain = getManagerChain(selectedUserId);
-  const directReportsCount = getDirectReportsCount(selectedUserId);
+  const directReports = getDirectReports(selectedUserId);
 
   const handleClose = () => {
     setSelectedUserId(null);
@@ -164,76 +189,71 @@ export default function PersonDetailPanel() {
       </DrawerHeader>
 
       <DrawerBody className={styles.body}>
-        {/* Profile Section */}
+        {/* Profile Section - Centered */}
         <div className={styles.profile}>
           <Avatar
             name={user.displayName}
-            size={64}
+            size={96}
             image={user.photoUrl ? { src: user.photoUrl } : undefined}
           />
-          <div className={styles.profileInfo}>
-            <Text className={styles.name}>{user.displayName}</Text>
-            {user.jobTitle && <Text className={styles.title}>{user.jobTitle}</Text>}
+          <Text className={styles.name}>{user.displayName}</Text>
+          {user.jobTitle && <Text className={styles.title}>{user.jobTitle}</Text>}
 
-            {/* Manager Chain Breadcrumb */}
-            {managerChain.length > 0 && (
-              <div className={styles.breadcrumb}>
-                <Text size={100}>Reports to:</Text>
-                {managerChain.slice(0, 3).map((manager, index) => (
-                  <span key={manager.id}>
-                    <Text
-                      className={styles.breadcrumbLink}
-                      size={100}
-                      onClick={() => setSelectedUserId(manager.id)}
-                    >
-                      {manager.displayName}
-                    </Text>
-                    {index < Math.min(managerChain.length - 1, 2) && (
-                      <Text className={styles.breadcrumbSeparator} size={100}> › </Text>
-                    )}
-                  </span>
-                ))}
-                {managerChain.length > 3 && (
-                  <Text size={100} className={styles.breadcrumbSeparator}>
-                    ... (+{managerChain.length - 3} more)
+          {/* Manager Chain Breadcrumb */}
+          {managerChain.length > 0 && (
+            <div className={styles.breadcrumb}>
+              <Text size={200}>Reports to:</Text>
+              {managerChain.slice(0, 3).map((manager, index) => (
+                <span key={manager.id}>
+                  <Text
+                    className={styles.breadcrumbLink}
+                    size={200}
+                    onClick={() => setSelectedUserId(manager.id)}
+                  >
+                    {manager.displayName}
                   </Text>
-                )}
-              </div>
-            )}
-
-            {/* Action Buttons - moved under profile info */}
-            <div className={styles.actions}>
-              {user.userPrincipalName && (
-                <>
-                  <Button
-                    appearance="primary"
-                    icon={<Chat24Regular />}
-                    onClick={handleChat}
-                    size="small"
-                  >
-                    Chat
-                  </Button>
-                  <Button
-                    appearance="secondary"
-                    icon={<Call24Regular />}
-                    onClick={handleCall}
-                    size="small"
-                  >
-                    Call
-                  </Button>
-                </>
-              )}
-              {user.mail && (
-                <Button
-                  appearance="secondary"
-                  icon={<Mail24Regular />}
-                  onClick={handleEmail}
-                  size="small"
-                >
-                  Email
-                </Button>
+                  {index < Math.min(managerChain.length - 1, 2) && (
+                    <Text className={styles.breadcrumbSeparator} size={200}> › </Text>
+                  )}
+                </span>
+              ))}
+              {managerChain.length > 3 && (
+                <Text size={200} className={styles.breadcrumbSeparator}>
+                  ... (+{managerChain.length - 3} more)
+                </Text>
               )}
             </div>
+          )}
+
+          {/* Action Buttons - Prominent Grid */}
+          <div className={styles.actions}>
+            {user.userPrincipalName && (
+              <>
+                <Button
+                  appearance="primary"
+                  icon={<Chat24Regular />}
+                  onClick={handleChat}
+                >
+                  Chat
+                </Button>
+                <Button
+                  appearance="secondary"
+                  icon={<Call24Regular />}
+                  onClick={handleCall}
+                >
+                  Call
+                </Button>
+              </>
+            )}
+            {user.mail && (
+              <Button
+                appearance="secondary"
+                icon={<Mail24Regular />}
+                onClick={handleEmail}
+              >
+                Email
+              </Button>
+            )}
           </div>
         </div>
 
@@ -273,10 +293,30 @@ export default function PersonDetailPanel() {
           </div>
         )}
 
-        {directReportsCount > 0 && (
+        {directReports.length > 0 && (
           <div className={styles.infoRow}>
-            <Text className={styles.label}>Direct Reports</Text>
-            <Text className={styles.value}>{directReportsCount} {directReportsCount === 1 ? 'person' : 'people'}</Text>
+            <Text className={styles.label}>Direct Reports ({directReports.length})</Text>
+            <div className={styles.directReportsList}>
+              {directReports.map((report) => (
+                <div
+                  key={report.id}
+                  className={styles.directReportItem}
+                  onClick={() => setSelectedUserId(report.id)}
+                >
+                  <Avatar
+                    name={report.displayName}
+                    size={32}
+                    image={report.photoUrl ? { src: report.photoUrl } : undefined}
+                  />
+                  <div className={styles.directReportInfo}>
+                    <Text className={styles.directReportName}>{report.displayName}</Text>
+                    {report.jobTitle && (
+                      <Text className={styles.directReportTitle}>{report.jobTitle}</Text>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </DrawerBody>
