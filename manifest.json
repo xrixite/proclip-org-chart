@@ -41,9 +41,5 @@
     "*.vercel.app",
     "login.microsoftonline.com",
     "*.login.microsoftonline.com"
-  ],
-  "webApplicationInfo": {
-    "id": "06e1a3a4-3a77-4d3d-952a-f53bddd4d02c",
-    "resource": "api://proclip-org-chart.vercel.app/06e1a3a4-3a77-4d3d-952a-f53bddd4d02c"
-  }
+  ]
 }

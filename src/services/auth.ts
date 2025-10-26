@@ -26,13 +26,15 @@ class AuthService {
         // Try to initialize Teams SDK
         await app.initialize();
         this.isInTeams = true;
-        console.log('Running in Teams - using Teams SSO');
+        console.log('Running in Teams - using MSAL popup authentication');
       } catch (error) {
         // Not in Teams, use MSAL for browser authentication
         this.isInTeams = false;
         console.log('Running in browser - using MSAL authentication');
-        await this.initializeMsal();
       }
+
+      // Always initialize MSAL for Graph API access
+      await this.initializeMsal();
     })();
 
     return this.initializationPromise;
@@ -74,11 +76,8 @@ class AuthService {
     }
 
     this.tokenPromise = (async () => {
-      if (this.isInTeams) {
-        return this.getTeamsToken();
-      } else {
-        return this.getMsalToken();
-      }
+      // Always use MSAL for Graph API access (works in both Teams and browser)
+      return this.getMsalToken();
     })();
 
     try {
