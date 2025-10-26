@@ -26,30 +26,34 @@ const useStyles = makeStyles({
   body: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '12px',
+    gap: '8px',
   },
   profile: {
     display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '8px',
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: '12px',
     paddingTop: '4px',
   },
+  profileInfo: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    flex: 1,
+  },
   name: {
-    fontSize: tokens.fontSizeBase500,
+    fontSize: tokens.fontSizeBase400,
     fontWeight: tokens.fontWeightSemibold,
-    textAlign: 'center',
   },
   title: {
     fontSize: tokens.fontSizeBase300,
     color: tokens.colorNeutralForeground2,
-    textAlign: 'center',
   },
   actions: {
     display: 'flex',
-    gap: '8px',
-    justifyContent: 'center',
+    gap: '6px',
     flexWrap: 'wrap',
+    marginTop: '4px',
   },
   section: {
     display: 'flex',
@@ -77,11 +81,11 @@ const useStyles = makeStyles({
   breadcrumb: {
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
+    gap: '4px',
     flexWrap: 'wrap',
-    fontSize: tokens.fontSizeBase200,
+    fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground2,
-    marginTop: '4px',
+    marginTop: '2px',
   },
   breadcrumbLink: {
     cursor: 'pointer',
@@ -165,68 +169,73 @@ export default function PersonDetailPanel() {
         <div className={styles.profile}>
           <Avatar
             name={user.displayName}
-            size={72}
+            size={64}
             image={user.photoUrl ? { src: user.photoUrl } : undefined}
           />
-          <Text className={styles.name}>{user.displayName}</Text>
-          {user.jobTitle && <Text className={styles.title}>{user.jobTitle}</Text>}
+          <div className={styles.profileInfo}>
+            <Text className={styles.name}>{user.displayName}</Text>
+            {user.jobTitle && <Text className={styles.title}>{user.jobTitle}</Text>}
 
-          {/* Manager Chain Breadcrumb */}
-          {managerChain.length > 0 && (
-            <div className={styles.breadcrumb}>
-              <Text size={200}>Reports to:</Text>
-              {managerChain.slice(0, 3).map((manager, index) => (
-                <span key={manager.id}>
-                  <Text
-                    className={styles.breadcrumbLink}
-                    size={200}
-                    onClick={() => setSelectedUserId(manager.id)}
-                  >
-                    {manager.displayName}
+            {/* Manager Chain Breadcrumb */}
+            {managerChain.length > 0 && (
+              <div className={styles.breadcrumb}>
+                <Text size={100}>Reports to:</Text>
+                {managerChain.slice(0, 3).map((manager, index) => (
+                  <span key={manager.id}>
+                    <Text
+                      className={styles.breadcrumbLink}
+                      size={100}
+                      onClick={() => setSelectedUserId(manager.id)}
+                    >
+                      {manager.displayName}
+                    </Text>
+                    {index < Math.min(managerChain.length - 1, 2) && (
+                      <Text className={styles.breadcrumbSeparator} size={100}> › </Text>
+                    )}
+                  </span>
+                ))}
+                {managerChain.length > 3 && (
+                  <Text size={100} className={styles.breadcrumbSeparator}>
+                    ... (+{managerChain.length - 3} more)
                   </Text>
-                  {index < Math.min(managerChain.length - 1, 2) && (
-                    <Text className={styles.breadcrumbSeparator} size={200}> › </Text>
-                  )}
-                </span>
-              ))}
-              {managerChain.length > 3 && (
-                <Text size={200} className={styles.breadcrumbSeparator}>
-                  ... (+{managerChain.length - 3} more)
-                </Text>
+                )}
+              </div>
+            )}
+
+            {/* Action Buttons - moved under profile info */}
+            <div className={styles.actions}>
+              {user.userPrincipalName && (
+                <>
+                  <Button
+                    appearance="primary"
+                    icon={<Chat24Regular />}
+                    onClick={handleChat}
+                    size="small"
+                  >
+                    Chat
+                  </Button>
+                  <Button
+                    appearance="secondary"
+                    icon={<Call24Regular />}
+                    onClick={handleCall}
+                    size="small"
+                  >
+                    Call
+                  </Button>
+                </>
+              )}
+              {user.mail && (
+                <Button
+                  appearance="secondary"
+                  icon={<Mail24Regular />}
+                  onClick={handleEmail}
+                  size="small"
+                >
+                  Email
+                </Button>
               )}
             </div>
-          )}
-        </div>
-
-        {/* Action Buttons */}
-        <div className={styles.actions}>
-          {user.userPrincipalName && (
-            <>
-              <Button
-                appearance="primary"
-                icon={<Chat24Regular />}
-                onClick={handleChat}
-              >
-                Chat
-              </Button>
-              <Button
-                appearance="secondary"
-                icon={<Call24Regular />}
-                onClick={handleCall}
-              >
-                Call
-              </Button>
-            </>
-          )}
-          {user.mail && (
-            <Button
-              appearance="secondary"
-              icon={<Mail24Regular />}
-              onClick={handleEmail}
-            >
-              Email
-            </Button>
-          )}
+          </div>
         </div>
 
         <Divider />
