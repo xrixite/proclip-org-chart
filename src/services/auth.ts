@@ -1,4 +1,4 @@
-import { app, authentication } from '@microsoft/teams-js';
+import { app } from '@microsoft/teams-js';
 import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/msal-browser';
 import { getEnvVar } from '../utils/env';
 
@@ -89,42 +89,6 @@ class AuthService {
   }
 
   /**
-   * Get token using Teams SSO
-   */
-  private async getTeamsToken(): Promise<string> {
-    try {
-      console.log('🔑 Requesting Teams SSO token...');
-      const token = await authentication.getAuthToken({
-        silent: false,
-      });
-
-      console.log('✅ Teams token received');
-      console.log('Token length:', token.length);
-
-      // Decode JWT to see what's inside (for debugging)
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        console.log('Token payload:', {
-          aud: payload.aud,
-          iss: payload.iss,
-          appid: payload.appid,
-          scp: payload.scp,
-          exp: new Date(payload.exp * 1000).toISOString(),
-        });
-      } catch (e) {
-        console.log('Could not decode token payload:', e);
-      }
-
-      this.accessToken = token;
-      return token;
-    } catch (error) {
-      console.error('❌ Failed to get Teams token:', error);
-      console.error('Error details:', JSON.stringify(error, null, 2));
-      throw error;
-    }
-  }
-
-  /**
    * Get token using MSAL (browser)
    */
   private async getMsalToken(): Promise<string> {
@@ -175,31 +139,6 @@ class AuthService {
     } catch (popupError) {
       console.error('Popup login failed:', popupError);
       throw popupError;
-    }
-  }
-
-  /**
-   * Login if not already authenticated
-   */
-  async login(): Promise<void> {
-    if (this.isInTeams) {
-      try {
-        const token = await authentication.authenticate({
-          url: `${window.location.origin}/auth-start.html`,
-          width: 600,
-          height: 535,
-        });
-
-        if (token) {
-          this.accessToken = token;
-        }
-      } catch (error) {
-        console.error('Teams login failed:', error);
-        throw error;
-      }
-    } else {
-      // MSAL login happens via getAccessToken
-      await this.getAccessToken();
     }
   }
 
