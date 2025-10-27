@@ -15,18 +15,21 @@ export async function exportOrgChartToPDF(): Promise<void> {
   }
 
   try {
-    // Get the viewport element that contains all nodes
+    // Get all the elements
     const viewport = reactFlowWrapper.querySelector('.react-flow__viewport') as HTMLElement;
+    const edgesLayer = reactFlowWrapper.querySelector('.react-flow__edges') as HTMLElement;
 
     if (!viewport) {
       throw new Error('Org chart viewport not found');
     }
 
-    // Store original transform to restore later
+    // Store original styles to restore later
     const originalTransform = viewport.style.transform;
-
-    // Temporarily reset transform to capture full chart
-    viewport.style.transform = 'translate(0px, 0px) scale(1)';
+    const originalWrapperStyle = {
+      width: reactFlowWrapper.style.width,
+      height: reactFlowWrapper.style.height,
+      overflow: reactFlowWrapper.style.overflow,
+    };
 
     // Get all node elements to calculate bounds
     const nodes = viewport.querySelectorAll('.react-flow__node');
@@ -60,24 +63,31 @@ export async function exportOrgChartToPDF(): Promise<void> {
     const width = maxX - minX;
     const height = maxY - minY;
 
-    // Capture the viewport with adjusted position
+    // Adjust the wrapper and viewport for capture
     viewport.style.transform = `translate(${-minX}px, ${-minY}px) scale(1)`;
+    reactFlowWrapper.style.width = `${width}px`;
+    reactFlowWrapper.style.height = `${height}px`;
+    reactFlowWrapper.style.overflow = 'visible';
 
     // Small delay to let browser render
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 200));
 
-    const canvas = await html2canvas(viewport, {
+    // Capture the entire ReactFlow wrapper (includes edges and nodes)
+    const canvas = await html2canvas(reactFlowWrapper, {
       backgroundColor: '#ffffff', // Use white background for PDFs (better for printing)
       scale: 1.5, // Good quality without being too large
       logging: false,
       width: width,
       height: height,
-      x: 0,
-      y: 0,
+      useCORS: true,
+      allowTaint: true,
     });
 
-    // Restore original transform
+    // Restore original styles
     viewport.style.transform = originalTransform;
+    reactFlowWrapper.style.width = originalWrapperStyle.width;
+    reactFlowWrapper.style.height = originalWrapperStyle.height;
+    reactFlowWrapper.style.overflow = originalWrapperStyle.overflow;
 
     // Calculate PDF dimensions (landscape for wide charts)
     const pdf = new jsPDF({
