@@ -38,7 +38,7 @@ const useStyles = makeStyles({
 
 export default function ListView() {
   const styles = useStyles();
-  const { users, setSelectedUserId, getFilteredUsers } = useStore();
+  const { setSelectedUserId, getFilteredUsers } = useStore();
 
   const filteredUsers = getFilteredUsers();
 

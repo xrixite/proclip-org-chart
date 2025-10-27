@@ -15,9 +15,8 @@ export async function exportOrgChartToPDF(): Promise<void> {
   }
 
   try {
-    // Get all the elements
+    // Get the viewport element
     const viewport = reactFlowWrapper.querySelector('.react-flow__viewport') as HTMLElement;
-    const edgesLayer = reactFlowWrapper.querySelector('.react-flow__edges') as HTMLElement;
 
     if (!viewport) {
       throw new Error('Org chart viewport not found');

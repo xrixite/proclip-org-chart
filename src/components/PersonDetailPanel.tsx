@@ -130,7 +130,6 @@ export default function PersonDetailPanel() {
   const styles = useStyles();
   const { selectedUserId, getUserById, setSelectedUserId, getManagerChain, getDirectReports } = useStore();
   const [userGroups, setUserGroups] = useState<string[]>([]);
-  const [loadingGroups, setLoadingGroups] = useState(false);
 
   if (!selectedUserId) return null;
 
@@ -161,23 +160,25 @@ export default function PersonDetailPanel() {
 
   // Load user groups when panel opens
   useEffect(() => {
+    if (!selectedUserId) return;
+
     async function loadGroups() {
-      if (!user.memberOf) {
-        setLoadingGroups(true);
+      const currentUser = getUserById(selectedUserId!);
+      if (!currentUser) return;
+
+      if (!currentUser.memberOf) {
         try {
-          const groups = await graphService.getUserGroups(selectedUserId);
+          const groups = await graphService.getUserGroups(selectedUserId!);
           setUserGroups(groups);
         } catch (error) {
           console.error('Failed to load user groups:', error);
-        } finally {
-          setLoadingGroups(false);
         }
       } else {
-        setUserGroups(user.memberOf);
+        setUserGroups(currentUser.memberOf);
       }
     }
     loadGroups();
-  }, [selectedUserId, user.memberOf]);
+  }, [selectedUserId, getUserById]);
 
   const handleClose = () => {
     setSelectedUserId(null);
