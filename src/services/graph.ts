@@ -90,7 +90,7 @@ class GraphService {
           ? await this.client.api(nextLink).get()
           : await this.client
               .api('/users')
-              .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses,employeeHireDate,skills,preferredLanguage,usageLocation')
+              .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses,employeeHireDate,preferredLanguage,usageLocation')
               .filter('accountEnabled eq true') // Only active users
               .top(999) // Max page size
               .get();
