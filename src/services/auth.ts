@@ -52,10 +52,14 @@ class AuthService {
         clientId,
         authority: `https://login.microsoftonline.com/${tenantId}`,
         redirectUri: window.location.origin,
+        navigateToLoginRequestUrl: true,
       },
       cache: {
-        cacheLocation: 'localStorage',
-        storeAuthStateInCookie: false,
+        cacheLocation: 'sessionStorage', // Use sessionStorage for better iframe support
+        storeAuthStateInCookie: true, // Required for redirect flow in iframes/Teams
+      },
+      system: {
+        allowRedirectInIframe: true, // Allow redirects in iframe (Teams desktop)
       },
     });
 
