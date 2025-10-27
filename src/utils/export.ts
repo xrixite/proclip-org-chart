@@ -37,20 +37,26 @@ export async function exportOrgChartToPDF(): Promise<void> {
       throw new Error('No nodes found in org chart');
     }
 
-    // Calculate bounding box of all nodes
+    // Calculate bounding box of all nodes using their transform positions
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
 
     nodes.forEach(node => {
-      const rect = (node as HTMLElement).getBoundingClientRect();
-      const viewportRect = viewport.getBoundingClientRect();
+      const element = node as HTMLElement;
+      const transform = element.style.transform;
 
-      const x = rect.left - viewportRect.left;
-      const y = rect.top - viewportRect.top;
+      // Parse translate values from transform
+      const match = transform.match(/translate\((-?\d+\.?\d*)px,\s*(-?\d+\.?\d*)px\)/);
+      if (match) {
+        const x = parseFloat(match[1]);
+        const y = parseFloat(match[2]);
+        const width = element.offsetWidth || 200;
+        const height = element.offsetHeight || 100;
 
-      minX = Math.min(minX, x);
-      minY = Math.min(minY, y);
-      maxX = Math.max(maxX, x + rect.width);
-      maxY = Math.max(maxY, y + rect.height);
+        minX = Math.min(minX, x);
+        minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x + width);
+        maxY = Math.max(maxY, y + height);
+      }
     });
 
     // Add padding
