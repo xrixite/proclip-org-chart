@@ -14,6 +14,12 @@ export interface User {
   mobilePhone?: string;
   businessPhones?: string[];
   photoUrl?: string;
+  // Additional fields
+  employeeHireDate?: string; // ISO date string
+  skills?: string[]; // Skills from user profile
+  preferredLanguage?: string;
+  usageLocation?: string;
+  memberOf?: string[]; // Groups/teams the user belongs to
 }
 
 /**

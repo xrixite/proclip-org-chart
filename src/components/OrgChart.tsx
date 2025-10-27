@@ -2,6 +2,7 @@ import { makeStyles, Text } from '@fluentui/react-components';
 import { useStore } from '../store';
 import TreeView from './TreeView';
 import D3TreeView from './D3TreeView';
+import ListView from './ListView';
 
 const useStyles = makeStyles({
   container: {
@@ -69,9 +70,7 @@ export default function OrgChart() {
       )}
       {viewMode === 'list' && (
         <div key="list" className={styles.viewContainer}>
-          <div className={styles.empty}>
-            <Text size={400}>List view coming soon...</Text>
-          </div>
+          <ListView />
         </div>
       )}
     </div>

@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from 'react';
 import {
   Drawer,
   DrawerHeader,
@@ -8,10 +9,12 @@ import {
   Text,
   makeStyles,
   tokens,
+  Badge,
 } from '@fluentui/react-components';
 import { Dismiss24Regular, Call24Regular, Chat24Regular, Mail24Regular } from '@fluentui/react-icons';
 import { chat, call } from '@microsoft/teams-js';
 import { useStore } from '../store';
+import { graphService } from '../services/graph';
 
 const useStyles = makeStyles({
   drawer: {
@@ -126,6 +129,8 @@ const useStyles = makeStyles({
 export default function PersonDetailPanel() {
   const styles = useStyles();
   const { selectedUserId, getUserById, setSelectedUserId, getManagerChain, getDirectReports } = useStore();
+  const [userGroups, setUserGroups] = useState<string[]>([]);
+  const [loadingGroups, setLoadingGroups] = useState(false);
 
   if (!selectedUserId) return null;
 
@@ -135,6 +140,44 @@ export default function PersonDetailPanel() {
 
   const managerChain = getManagerChain(selectedUserId);
   const directReports = getDirectReports(selectedUserId);
+
+  // Calculate tenure if hire date is available
+  const tenure = useMemo(() => {
+    if (!user.employeeHireDate) return null;
+    const hireDate = new Date(user.employeeHireDate);
+    const now = new Date();
+    const years = now.getFullYear() - hireDate.getFullYear();
+    const months = now.getMonth() - hireDate.getMonth();
+    const totalMonths = years * 12 + months;
+
+    if (totalMonths < 12) {
+      return `${totalMonths} month${totalMonths !== 1 ? 's' : ''}`;
+    } else {
+      const y = Math.floor(totalMonths / 12);
+      const m = totalMonths % 12;
+      return m > 0 ? `${y} year${y !== 1 ? 's' : ''}, ${m} month${m !== 1 ? 's' : ''}` : `${y} year${y !== 1 ? 's' : ''}`;
+    }
+  }, [user.employeeHireDate]);
+
+  // Load user groups when panel opens
+  useEffect(() => {
+    async function loadGroups() {
+      if (!user.memberOf) {
+        setLoadingGroups(true);
+        try {
+          const groups = await graphService.getUserGroups(selectedUserId);
+          setUserGroups(groups);
+        } catch (error) {
+          console.error('Failed to load user groups:', error);
+        } finally {
+          setLoadingGroups(false);
+        }
+      } else {
+        setUserGroups(user.memberOf);
+      }
+    }
+    loadGroups();
+  }, [selectedUserId, user.memberOf]);
 
   const handleClose = () => {
     setSelectedUserId(null);
@@ -290,6 +333,43 @@ export default function PersonDetailPanel() {
           <div className={styles.infoRow}>
             <Text className={styles.label}>Office Location</Text>
             <Text className={styles.value}>{user.officeLocation}</Text>
+          </div>
+        )}
+
+        {user.employeeHireDate && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Start Date</Text>
+            <Text className={styles.value}>
+              {new Date(user.employeeHireDate).toLocaleDateString()}
+              {tenure && <Text size={200} style={{ color: tokens.colorNeutralForeground3, marginLeft: '8px' }}>({tenure})</Text>}
+            </Text>
+          </div>
+        )}
+
+        {user.skills && user.skills.length > 0 && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Skills</Text>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {user.skills.map((skill, index) => (
+                <Badge key={index} appearance="tint" size="small">{skill}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {userGroups.length > 0 && (
+          <div className={styles.infoRow}>
+            <Text className={styles.label}>Teams & Groups</Text>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {userGroups.slice(0, 5).map((group, index) => (
+                <Text key={index} size={200}>{group}</Text>
+              ))}
+              {userGroups.length > 5 && (
+                <Text size={200} style={{ color: tokens.colorNeutralForeground3 }}>
+                  +{userGroups.length - 5} more
+                </Text>
+              )}
+            </div>
           </div>
         )}
 

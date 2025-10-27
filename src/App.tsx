@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button } from '@fluentui/react-components';
-import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular } from '@fluentui/react-icons';
+import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
+import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular, ArrowDownload20Regular, DocumentPdf20Regular, DocumentCsv20Regular } from '@fluentui/react-icons';
 import { useStore } from './store';
 import { authService } from './services/auth';
 import { graphService } from './services/graph';
@@ -11,6 +11,7 @@ import SearchBar from './components/SearchBar';
 import PersonDetailPanel from './components/PersonDetailPanel';
 import DepartmentFilter from './components/DepartmentFilter';
 import ManagerSetup from './components/ManagerSetup';
+import { exportOrgChartToPDF, exportEmployeeListToCSV } from './utils/export';
 
 const useStyles = makeStyles({
   container: {
@@ -68,6 +69,7 @@ function App() {
     error,
     selectedUserId,
     isDarkMode,
+    users,
     setUsers,
     setOrgTree,
     setCurrentUserId,
@@ -77,6 +79,25 @@ function App() {
     setIsAdmin,
     isAdmin,
   } = useStore();
+
+  const handleExportPDF = async () => {
+    try {
+      await exportOrgChartToPDF();
+    } catch (error) {
+      console.error('Failed to export PDF:', error);
+      alert('Failed to export PDF. Please try again.');
+    }
+  };
+
+  const handleExportCSV = () => {
+    try {
+      const userList = Array.from(users.values());
+      exportEmployeeListToCSV(userList);
+    } catch (error) {
+      console.error('Failed to export CSV:', error);
+      alert('Failed to export CSV. Please try again.');
+    }
+  };
 
   useEffect(() => {
     async function initializeApp() {
@@ -228,6 +249,27 @@ function App() {
         <div className={styles.header}>
           <Text className={styles.title}>ProClip Organization Chart</Text>
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+            <Menu>
+              <MenuTrigger disableButtonEnhancement>
+                <Button
+                  appearance="subtle"
+                  icon={<ArrowDownload20Regular />}
+                  title="Export"
+                >
+                  Export
+                </Button>
+              </MenuTrigger>
+              <MenuPopover>
+                <MenuList>
+                  <MenuItem icon={<DocumentPdf20Regular />} onClick={handleExportPDF}>
+                    Export as PDF
+                  </MenuItem>
+                  <MenuItem icon={<DocumentCsv20Regular />} onClick={handleExportCSV}>
+                    Export as CSV
+                  </MenuItem>
+                </MenuList>
+              </MenuPopover>
+            </Menu>
             <Button
               appearance="subtle"
               icon={isDarkMode ? <WeatherSunny20Regular /> : <WeatherMoon20Regular />}

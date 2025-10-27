@@ -90,7 +90,7 @@ class GraphService {
           ? await this.client.api(nextLink).get()
           : await this.client
               .api('/users')
-              .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses')
+              .select('id,displayName,givenName,surname,mail,userPrincipalName,jobTitle,department,officeLocation,mobilePhone,businessPhones,accountEnabled,assignedLicenses,employeeHireDate,skills,preferredLanguage,usageLocation')
               .filter('accountEnabled eq true') // Only active users
               .top(999) // Max page size
               .get();
@@ -316,7 +316,33 @@ class GraphService {
       officeLocation: graphUser.officeLocation,
       mobilePhone: graphUser.mobilePhone,
       businessPhones: graphUser.businessPhones,
+      employeeHireDate: graphUser.employeeHireDate,
+      skills: graphUser.skills,
+      preferredLanguage: graphUser.preferredLanguage,
+      usageLocation: graphUser.usageLocation,
     };
+  }
+
+  /**
+   * Get user's groups and teams membership
+   */
+  async getUserGroups(userId: string): Promise<string[]> {
+    if (!this.client) throw new Error('Graph client not initialized');
+
+    try {
+      const response = await this.client
+        .api(`/users/${userId}/memberOf`)
+        .select('displayName')
+        .get();
+
+      // Return only group/team names (not security groups or directory roles)
+      return response.value
+        .filter((item: any) => item['@odata.type'] === '#microsoft.graph.group')
+        .map((group: any) => group.displayName);
+    } catch (error) {
+      console.warn(`Could not fetch groups for user ${userId}:`, error);
+      return [];
+    }
   }
 
   /**
