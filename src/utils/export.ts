@@ -67,7 +67,7 @@ export async function exportOrgChartToPDF(): Promise<void> {
     await new Promise(resolve => setTimeout(resolve, 100));
 
     const canvas = await html2canvas(viewport, {
-      backgroundColor: '#1e1e1e',
+      backgroundColor: '#ffffff', // Use white background for PDFs (better for printing)
       scale: 1.5, // Good quality without being too large
       logging: false,
       width: width,
