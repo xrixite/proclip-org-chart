@@ -135,17 +135,23 @@ export async function exportOrgChartToPDF(): Promise<void> {
 /**
  * Export employee list as CSV
  */
-export function exportEmployeeListToCSV(users: User[]): void {
+export function exportEmployeeListToCSV(
+  users: User[],
+  getManager?: (userId: string) => User | undefined
+): void {
   // Prepare data for CSV
-  const csvData = Array.from(users).map(user => ({
-    'Name': user.displayName,
-    'Job Title': user.jobTitle || '',
-    'Department': user.department || '',
-    'Email': user.mail || '',
-    'Phone': user.businessPhones?.[0] || '',
-    'Office Location': user.officeLocation || '',
-    'Manager': '', // Will be populated if we have manager data
-  }));
+  const csvData = Array.from(users).map(user => {
+    const manager = getManager ? getManager(user.id) : undefined;
+    return {
+      'Name': user.displayName,
+      'Job Title': user.jobTitle || '',
+      'Department': user.department || '',
+      'Email': user.mail || '',
+      'Phone': user.businessPhones?.[0] || '',
+      'Office Location': user.officeLocation || '',
+      'Manager': manager?.displayName || '',
+    };
+  });
 
   // Convert to CSV
   const csv = Papa.unparse(csvData);

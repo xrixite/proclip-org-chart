@@ -92,7 +92,8 @@ function App() {
   const handleExportCSV = () => {
     try {
       const userList = Array.from(users.values());
-      exportEmployeeListToCSV(userList);
+      const { getManager } = useStore.getState();
+      exportEmployeeListToCSV(userList, getManager);
     } catch (error) {
       console.error('Failed to export CSV:', error);
       alert('Failed to export CSV. Please try again.');
