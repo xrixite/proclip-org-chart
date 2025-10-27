@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { FluentProvider, webLightTheme, webDarkTheme, Spinner, Text, makeStyles, tokens, MessageBar, MessageBarBody, Button, Menu, MenuTrigger, MenuPopover, MenuList, MenuItem } from '@fluentui/react-components';
-import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular, ArrowDownload20Regular, DocumentPdf20Regular, DocumentCsv20Regular } from '@fluentui/react-icons';
+import { WeatherMoon20Regular, WeatherSunny20Regular, PeopleTeam20Regular, ArrowDownload20Regular, DocumentPdf20Regular, DocumentTable20Regular } from '@fluentui/react-icons';
 import { useStore } from './store';
 import { authService } from './services/auth';
 import { graphService } from './services/graph';
@@ -264,7 +264,7 @@ function App() {
                   <MenuItem icon={<DocumentPdf20Regular />} onClick={handleExportPDF}>
                     Export as PDF
                   </MenuItem>
-                  <MenuItem icon={<DocumentCsv20Regular />} onClick={handleExportCSV}>
+                  <MenuItem icon={<DocumentTable20Regular />} onClick={handleExportCSV}>
                     Export as CSV
                   </MenuItem>
                 </MenuList>
